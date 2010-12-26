@@ -1,0 +1,28 @@
+SimpleDB Model:
+
+
+
+domain: ibus_stations
+		<submap> ----->0:{json}, 1:(json}		
+
+domain: ibus_stations_details
+		<lat_long> --->submap=xxx lat=xx, lon=xxx, desc=xxx, lanes = {['1','2','3','4']}
+
+domain: ibus_lane_segments
+		<submap>_<lane_id>---> 0:{lanesegment:{startid='', endid='',[point:{lat,lon}, point:{lat,lon}]}, segment....}
+domain: ibus_segment_points
+		<submap>_<lane_id>_<segmentid> -->0:point, 1:point
+
+
+//ADD LATER
+domain: ibus_submaps 
+		submap --> lat1=xxx lon1=xxx lat2=xxx lon2=xxx, sm1=xxx, sm2=xxx
+		
+		il_yoqneam=.....
+		il = ....
+domain: ibus_nodes_map
+		<submapid>-->1={edge{weight=xxx,start:{lat,long,stid},end:{start:long,stid}}},2=....
+domain: ibus_nodes_map_weights//ADD LATER, 30 min intervals
+		<submapid>_<id> --> <hour>={weight, num_of_calculation}
+				
+		

@@ -1,0 +1,2 @@
+module MapbuilderHelper
+end

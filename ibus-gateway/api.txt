@@ -1,0 +1,104 @@
+
+API Version: 0.0.1
+
+All the input structures are wrapped with 'data' element (for json and xml), when html post params are used
+then the parameter names should be encoded as data[<some name>] for example data[lat] for the lat parameter.
+All the responses have root elements so they are mapped in a trivial way to xml.
+
+The default return type is JSON in order to receive the response in XML a ".xml" suffix shoould be added to the url
+
+The ":<name>" in the url represent a parameter that should be encoded in the url (:id for an id parameter) 
+
+
+Recording API:
+
+1) create recording session (with first station)
+POST /lanes
+REQUEST: {data:{lat:xxxx,long:xxx,desc:xxx,laneid:xxx,ts:xxx}}
+RESPONSE: {"session":{"id":"xxxxxx"}} the recording session id
+
+2) add point to route
+POST /route/:id/point
+REQUEST: {data:{lat:xxxx,long:xxx, ts:xxx}}
+RESPONSE: ''
+
+
+3) add station to route
+POST /route/:id/station
+REQUEST: {data:{lat:xxxx,long:xxx, ts:xxx,desc:xxx}}
+RESPONSE: ''
+
+
+4) finish recording station
+POST /route/:id/laststation
+REQUEST: {data:{lat:xxxx,long:xxx, desc:xxx}}
+RESPONSE: ''
+
+
+Map Query API:
+
+1) Retrieve stations in area deined by a center point and offset in meters for latitude and longitude
+GET /stations/by_center/:lat/:long/:latoffst/:longoffst
+GET /stations/by_center?lat=xxx&?long=xxx&latoffst=xxx&longoffst=xxx
+RESPONSE: {stations:{[station:{lat:xxx,long:xxx,desc:xxx, id:xxx},station:{lat:xxx,long:xxx,desc:xxx, id:xxx}]}}
+
+
+2) Retrieve stations in area deined by upper left corner and lower right corner
+GET /stations/by_corners/:lat1/:long1/:lat2/:long2
+GET /stations/by_corners?lat1=xxx&?long1=xxx&lat2=xxx&long2t=xxx
+RESPONSE: {stations:{[station:{lat:xxx,long:xxx,desc:xxx, id:xxx},station:{lat:xxx,long:xxx,desc:xxx, id:xxx}]}}
+
+3) Retrieves lane details (points every several seconds) according to a details level(zoom), levels: 1-10, when 1 is most detailed
+GET /lanes/:id/:level
+GET /lanes/:id&level=xxx
+RESPONSE: {points:{[point:{lat:xxx,long:xxx},point:{lat:xxx,long:xxx}]}}
+
+4) Retrieves lanes stations
+GET /lanes/:id/stations
+RESPONSE: {stations:{[station:{lat:xxx,long:xxx,desc:xxx, id:xxx},station:{lat:xxx,long:xxx,desc:xxx, id:xxx}]}}
+
+5) Retrieves lanes for a certain station
+GET /stations/:id/lanes
+RESPONSE: {lanes:{[lane:{id:5,dir:"last station id"}]}}
+
+6)Retrieve station details for a certain station
+GET /stations/:id
+RESPONSE: {detailedstation:{lat:xxx,long:xxx,desc:xxx, id:xxx, lanes:{[{id:5,dir:"last station id"}]}}}
+
+7) Retrieves lane details (points every several seconds) according to a details level(zoom), levels: 1-10, when 1 is most detailed
+   in a certain area on the map defined by a center point and offsets in meters for latitude and longitude 
+GET /lanes/:id/by_center/:lat/:long/:latoffst/:longoffst/:level
+GET /lanes/:id/by_center?lat=xxx&?long=xxx&latoffst=xxx&longoffst=xxx&level=xxx
+RESPONSE: {points:{[point:{lat:xxx,long:xxx},point:{lat:xxx,long:xxx}]}}
+
+8) Retrieves lane details (points every several seconds) according to a details level(zoom), levels: 1-10, when 1 is most detailed
+   in a certain area on the map defined by upper left and lower right corners 
+GET /lanes/:id/by_corners/:lat1/:long1/:lat2/:long2/:level
+GET /lanes/:id/by_corners?lat1=xxx&?long1=xxx&lat2=xxx&long2t=xxx&level=xxx
+RESPONSE: {points:{[point:{lat:xxx,long:xxx},point:{lat:xxx,long:xxx}]}}
+
+9) Retrieves lane stations  in a certain area on the map defined by a center point and offsets in meters for latitude and longitude 
+GET /lanes/:id/stations/by_center/:lat/:long/:latoffst/:longoffst
+GET /lanes/:id/stations/by_center?lat=xxx&?long=xxx&latoffst=xxx&longoffst=xxx
+RESPONSE: {stations:{[station:{lat:xxx,long:xxx,desc:xxx, id:xxx},station:{lat:xxx,long:xxx,desc:xxx, id:xxx}]}}
+
+10) Retrieves lane stations  in a certain area on the map defined by upper left and lower right corners
+GET /lanes/:id/stations/by_corners/:lat1/:long1/:lat2/:long2/:level
+GET /lanes/:id/stations/by_corners?lat1=xxx&?long1=xxx&lat2=xxx&long2t=xxx&level=xxx
+RESPONSE: {stations:{[station:{lat:xxx,long:xxx,desc:xxx, id:xxx},station:{lat:xxx,long:xxx,desc:xxx, id:xxx}]}}
+
+Navigation API
+
+1) navigate (start point, end point)
+
+GET /route/:lat1/:long1/:lat2/:long2
+GET /route?lat1=xxxx&long1=xxx&lat2=xxx&long2=xxx
+RESPONSE: {route:{id:xxx,line:{[{lat:xxx,long:xxx},{lat:xxx,long:xxx}]},stations:{[{lat:xxx,long:xxx,desc:xxx, id:xxx},{lat:xxx,long:xxx,desc:xxx, id:xxx}]}}
+
+User API:
+1) user location
+
+POST /user/:id/:routeid
+REQUEST: {data:{lat:xxx,long:xxx,ts:xxx}}
+
+

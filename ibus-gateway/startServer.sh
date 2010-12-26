@@ -1,0 +1,1 @@
+jruby script/rails server
