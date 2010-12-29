@@ -10,6 +10,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
@@ -32,7 +39,8 @@ import static com.ibus.map.utils.SimpleDBNames.*;
 public class SimpleDBMapLoader implements IMapDBLoader {
 	private AmazonSimpleDB sdb;
 	private Gson gson = new Gson();
-	
+	private ExecutorService exec = new ThreadPoolExecutor(10, 30, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+
 	@Inject
 	public SimpleDBMapLoader(@Named("AWS USER KEY")String userKey, @Named("AWS SECRET KEY")String secretKey) {
 		sdb = new AmazonSimpleDBClient(new BasicAWSCredentials(userKey,
@@ -170,31 +178,46 @@ public class SimpleDBMapLoader implements IMapDBLoader {
 		SelectRequest selectRequest = new SelectRequest("select * from "+LINE_SEGMENTS+" where "+SUBMAP_ATTR+" = '"+submap+"'");
 		SelectResult res = sdb.select(selectRequest);
 		ArrayList<LineSegment> segments = new ArrayList<LineSegment>();
+		LinkedList<Future<LineSegment>> fList = new LinkedList<Future<LineSegment>>();
 		for(Item itm:res.getItems()){
-			for(Attribute attr:itm.getAttributes()){
+			for(final Attribute attr:itm.getAttributes()){
 				if(attr.getName().equalsIgnoreCase(LINE_NAME_ATTR) ||
 				   attr.getName().equalsIgnoreCase(SUBMAP_ATTR)){
 					continue;
 				}
-				LineSegment ls = gson.fromJson(attr.getValue(), LineSegment.class); 
-				//query for the segment points
-				String query = 	"select * from "+SEGMENT_POINTS+" where itemName() = '"
-					+ls.getLineId()+"_"+attr.getName()+ "' order by itemName() Asc";
-				SelectRequest pointsSelectRequest = new SelectRequest(query);
-				SelectResult pointsres = sdb.select(pointsSelectRequest);
-				for (Item pointsitm : pointsres.getItems()) {
-					TimedPoint[] tmp = new TimedPoint[pointsitm.getAttributes().size()];
-					for (Attribute p : pointsitm.getAttributes()) {
-						int indx = Integer.valueOf(p.getName());
-						tmp[indx] = gson.fromJson(p.getValue(),	TimedPoint.class);
-					}
-					ls.setPoints(new ArrayList<TimedPoint>(Arrays.asList(tmp)));
-				}
-
 				
-				segments.add(ls);
+				Future<LineSegment> submit = exec.submit(new Callable<LineSegment>() {
+					@Override
+					public LineSegment call() throws Exception {
+						final LineSegment ls = gson.fromJson(attr.getValue(), LineSegment.class); 
+						//query for the segment points
+						String query = 	"select * from "+SEGMENT_POINTS+" where itemName() = '"
+							+ls.getLineId()+"_"+attr.getName()+ "' order by itemName() Asc";
+						final SelectRequest pointsSelectRequest = new SelectRequest(query);
+						SelectResult pointsres = sdb.select(pointsSelectRequest);
+						for (Item pointsitm : pointsres.getItems()) {
+							TimedPoint[] tmp = new TimedPoint[pointsitm.getAttributes().size()];
+							for (Attribute p : pointsitm.getAttributes()) {
+								int indx = Integer.valueOf(p.getName());
+								tmp[indx] = gson.fromJson(p.getValue(),	TimedPoint.class);
+							}
+							ls.setPoints(new ArrayList<TimedPoint>(Arrays.asList(tmp)));
+						}
+						return ls;
+					}
+				});
+				fList.add(submit);
 			}
-			
+		}
+		
+		for(Future<LineSegment> fls:fList){
+			try {
+				LineSegment ls = fls.get();
+				segments.add(ls);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return segments.toArray(new LineSegment[0]);
 	}
