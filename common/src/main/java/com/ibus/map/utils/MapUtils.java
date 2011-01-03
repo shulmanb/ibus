@@ -20,6 +20,22 @@ public class MapUtils {
 		{111660,19390},  //LAT80
 		{111690,0}};     //LAT90
 	
+	 /** The RTRee implementation assumes euclidic space - flat (x,y), 
+	 * i.e. the distance between points is calculated by sqrt((X-X1)^2 +(Y-Y1)^2)
+	 * as the coordinates do not represent distnace from 0 but degrees, the distance 
+	 * is calculated in degrees so they need to be converted to degrees. We convert aproximatly 
+	 * by multiplying by average degrees in a latitude and longitude (the conversion is only aproximate
+	 * and is more aqurate at )
+	 */   
+	public static float metricDistanceInDegrees(int metric, int lon){
+		lon = lon/10;
+		return (((float)0.00009 +1/LAT_LONG_SEC_SIZES[lon][1] )/2)*metric;
+	}
+
+	public static float degreesDistanceInMeters(float degree, int lat){
+		lat = lat/10;
+		return degree/(((float)0.000009 +(float)1/LAT_LONG_SEC_SIZES[lat][1] )/2);
+	}
 
 	/**
 	 * rouds the latitude

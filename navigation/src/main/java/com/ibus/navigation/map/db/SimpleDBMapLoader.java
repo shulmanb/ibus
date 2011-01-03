@@ -1,5 +1,15 @@
 package com.ibus.navigation.map.db;
 
+import static com.ibus.map.utils.SimpleDBNames.DESC_ATTR;
+import static com.ibus.map.utils.SimpleDBNames.LAT_ATTR;
+import static com.ibus.map.utils.SimpleDBNames.LINES_ATTR;
+import static com.ibus.map.utils.SimpleDBNames.LINE_NAME_ATTR;
+import static com.ibus.map.utils.SimpleDBNames.LINE_SEGMENTS;
+import static com.ibus.map.utils.SimpleDBNames.LON_ATTR;
+import static com.ibus.map.utils.SimpleDBNames.SEGMENT_POINTS;
+import static com.ibus.map.utils.SimpleDBNames.STATIONS_DETAILS;
+import static com.ibus.map.utils.SimpleDBNames.SUBMAP_ATTR;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +21,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,8 +43,6 @@ import com.ibus.map.LineSegment;
 import com.ibus.map.Node;
 import com.ibus.map.Stop;
 import com.ibus.map.TimedPoint;
-
-import static com.ibus.map.utils.SimpleDBNames.*;
 public class SimpleDBMapLoader implements IMapDBLoader {
 	private AmazonSimpleDB sdb;
 	private Gson gson = new Gson();

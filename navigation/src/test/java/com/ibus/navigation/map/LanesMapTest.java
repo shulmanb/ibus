@@ -7,6 +7,8 @@ import com.ibus.map.Node;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopsRoute;
+import com.ibus.navigation.dijkstra.RoutesMap;
+import com.ibus.navigation.dijkstra.RoutesMapFactory;
 import com.ibus.navigation.map.db.IMapDBLoader;
 
 
@@ -145,6 +147,140 @@ public class LanesMapTest extends TestCase{
 		assertTrue(stops.length== 12);
 		stops = map.getStopsInArear(new Point((float)32.773077,(float)35.01240),190,190);
 		assertTrue(stops.length== 4);
+	}
+	
+	public void testAddCloseStopWithWalkingDistance(){
+		RoutesMapFactory f = new RoutesMapFactory();
+		RoutesMap m = f.createMap(4);
+		LinesMap lm = new LinesMap(m, "");
+		//line 1
+		Node nodeA = new Node("1", 0);//32.773694, 35.013176//Shilon/Yigal Alon
+		Node nodeD = new Node("1", 1);//32.777411, 35.012360
+		
+		//line 2
+		Node nodeG = new Node("2", 2);//32.773388, 35.011282//yigal alon/via biram 
+		Node nodeH = new Node("2", 3);//32.774227, 35.011215
+
+		Point a = new Point((float)32.773694, (float)35.013176);
+		Point d = new Point((float)32.777411, (float)35.012360);
+
+		Point g = new Point((float)32.773388, (float) 35.011282);
+		Point h = new Point((float)32.774227, (float)35.011215);
+
+		Stop stopA = new Stop("A", a).addNode(nodeA);////Shilon/Yigal Alon
+		Stop stopD = new Stop("D", d).addNode(nodeD);//, 
+		
+		//line 2
+		Stop stopG = new Stop("G", g).addNode(nodeG);//,//yigal alon/via biram 
+		Stop stopH = new Stop("H", h).addNode(nodeH);//, 
+
+		m.addVertex(nodeA, nodeD, 1);
+		m.addVertex(nodeG, nodeH, 3);
+		lm.addStopToMap(stopA);
+		lm.addStopToMap(stopD);
+		lm.addStopToMap(stopG);
+		lm.addStopToMap(stopH);
+		assertTrue(m.getWeight(nodeA, nodeD)>0);
+	}
+	
+	public void testJoinMapsNoMutuals(){
+		RoutesMapFactory f = new RoutesMapFactory();
+		RoutesMap m = f.createMap(2);
+		RoutesMap m1 = f.createMap(2);
+		LinesMap lm = new LinesMap(m, "");
+		LinesMap lm1 = new LinesMap(m1, "");
+		//line 1
+		Node nodeA = new Node("1", 0);//32.773694, 35.013176//Shilon/Yigal Alon
+		Node nodeD = new Node("1", 1);//32.777411, 35.012360
+		
+		//line 2
+		Node nodeG = new Node("2", 0);//32.773388, 35.011282//yigal alon/via biram 
+		Node nodeH = new Node("2", 1);//32.774227, 35.011215
+
+		Point a = new Point((float)32.773694, (float)35.013176);
+		Point d = new Point((float)32.777411, (float)35.012360);
+
+		Point g = new Point((float)32.773388, (float) 35.011282);
+		Point h = new Point((float)32.774227, (float)35.011215);
+
+		Stop stopA = new Stop("A", a).addNode(nodeA);////Shilon/Yigal Alon
+		Stop stopD = new Stop("D", d).addNode(nodeD);//, 
+		
+		//line 2
+		Stop stopG = new Stop("G", g).addNode(nodeG);//,//yigal alon/via biram 
+		Stop stopH = new Stop("H", h).addNode(nodeH);//, 
+
+		m.addVertex(nodeA, nodeD, 1);
+		m1.addVertex(nodeG, nodeH, 3);
+		lm.addStopToMap(stopA);
+		lm.addStopToMap(stopD);
+		lm.addLineSegmentToMap(new LineSegment("1", stopA, stopD));
+		lm1.addStopToMap(stopG);
+		lm1.addStopToMap(stopH);
+		lm1.addLineSegmentToMap(new LineSegment("2", stopG, stopH));
+		lm.joinMaps(lm1);
+		assertEquals(2,nodeG.getId());
+		assertEquals(3,nodeH.getId());
+		assertTrue(m.getWeight(nodeA, nodeD)>0);
+		
+		
+	}
+	public void testJoinMapsWithMutuals(){
+		RoutesMapFactory f = new RoutesMapFactory();
+		RoutesMap m = f.createMap(3);
+		RoutesMap m1 = f.createMap(4);
+		LinesMap lm = new LinesMap(m, "");
+		LinesMap lm1 = new LinesMap(m1, "");
+		//line 1
+		Node nodeA = new Node("1", 0);//32.773694, 35.013176//Shilon/Yigal Alon
+		Node nodeD = new Node("1", 1);//32.777411, 35.012360
+		Node nodeD1 = new Node("1", 0);//32.777411, 35.012360
+		
+		//line 2
+		Node nodeF = new Node("2", 2);//32.777411, 35.012360
+		Node nodeF1 = new Node("2", 1);//32.777411, 35.012360
+		Node nodeG = new Node("2", 2);//32.773388, 35.011282//yigal alon/via biram 
+		Node nodeH = new Node("2", 3);//32.774227, 35.011215
+
+		Point a = new Point((float)32.773694, (float)35.013176);
+		Point d = new Point((float)32.777411, (float)35.012360);
+
+		Point g = new Point((float)32.773388, (float) 35.011282);
+		Point h = new Point((float)32.774227, (float)35.011215);
+
+		Stop stopA = new Stop("A", a).addNode(nodeA);////Shilon/Yigal Alon
+		Stop stopD = new Stop("D", d).addNode(nodeD).addNode(nodeF);//, 
+		Stop stopD1 = new Stop("D", d).addNode(nodeD1).addNode(nodeF1);//, 
+		
+		//line 2
+		Stop stopG = new Stop("G", g).addNode(nodeG);//,//yigal alon/via biram 
+		Stop stopH = new Stop("H", h).addNode(nodeH);//, 
+
+		m.addVertex(nodeA, nodeD, 1);
+		
+		m1.addVertex(nodeF1, nodeG, 3);
+		m1.addVertex(nodeG, nodeH, 3);
+		lm.addStopToMap(stopA);
+		lm.addStopToMap(stopD);
+		assertTrue(m.getWeight(nodeF, nodeD)>0);
+		assertTrue(m.getWeight(nodeD, nodeF)>0);
+		lm.addLineSegmentToMap(new LineSegment("1", stopA, stopD));
+		lm1.addStopToMap(stopD1);
+		assertTrue(m1.getWeight(nodeF1, nodeD1)>0);
+		assertTrue(m1.getWeight(nodeD1, nodeF1)>0);
+		lm1.addStopToMap(stopG);
+		lm1.addStopToMap(stopH);
+		lm1.addLineSegmentToMap(new LineSegment("2", stopD1, stopG));
+		lm1.addLineSegmentToMap(new LineSegment("2", stopG, stopH));
+		lm.joinMaps(lm1);
+		assertEquals(3,nodeG.getId());
+		assertEquals(4,nodeH.getId());
+		assertTrue(m.getWeight(nodeA, nodeD)>0);
+		assertTrue(m.getWeight(nodeA, nodeH)>0);
+		//self connection
+		assertTrue(m.getWeight(nodeF, nodeD)>0);
+		
+		
 	}
 	
 }

@@ -3,12 +3,11 @@ package com.ibus.navigation.dijkstra;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import com.ibus.map.Node;
-import com.ibus.navigation.dijkstra.DijkstraEngine;
-import com.ibus.navigation.dijkstra.RoutesMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
+
+import com.ibus.map.Node;
 
 /**
  * DijkstraEngineTest to validate the DijkstraEngine class.
@@ -71,6 +70,13 @@ public class DijkstraEngineTest extends TestCase {
 		public RoutesMap getInverse() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		public int join(RoutesMap newMap, Map<Integer, Integer> mutual) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
 	};
 
 	
@@ -142,6 +148,12 @@ public class DijkstraEngineTest extends TestCase {
 		public RoutesMap getInverse() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		public int join(RoutesMap newMap, Map<Integer, Integer> mutual) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 	};
 
 	/**
@@ -194,6 +206,12 @@ public class DijkstraEngineTest extends TestCase {
 		public RoutesMap getInverse() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		public int join(RoutesMap newMap, Map<Integer, Integer> mutual) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 	};
 
 	/**
@@ -243,6 +261,13 @@ public class DijkstraEngineTest extends TestCase {
 
 		public RoutesMap getInverse() {
 			throw new UnsupportedOperationException();
+		}
+
+
+		@Override
+		public int join(RoutesMap newMap, Map<Integer, Integer> mutual) {
+			// TODO Auto-generated method stub
+			return 0;
 		}
 	};
 

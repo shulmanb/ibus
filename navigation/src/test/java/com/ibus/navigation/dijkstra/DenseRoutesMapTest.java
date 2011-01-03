@@ -1,6 +1,8 @@
 package com.ibus.navigation.dijkstra;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.ibus.map.Node;
 import com.ibus.navigation.dijkstra.DenseRoutesMap;
@@ -15,7 +17,6 @@ public class DenseRoutesMapTest extends TestCase {
 	private final static Node NodeC = new Node("C",2);
 	private final static Node NodeD = new Node("D",3);
 	private final static Node NodeE = new Node("E",4);
-	private final static Node NodeF = new Node("F",5);
 
 	public DenseRoutesMapTest(String name) {
 		super(name);
@@ -76,4 +77,44 @@ public class DenseRoutesMapTest extends TestCase {
 		assertDistanceEquals(NodeA, NodeD, Integer.MAX_VALUE);
 		assertDistanceEquals(NodeE, NodeC, Integer.MAX_VALUE);
 	}
+	
+	public void testJoinMapNoMutualNodes(){
+		DenseRoutesMap map1 = new DenseRoutesMap(3);
+		Node NodeA1 = new Node("A1",0);
+		Node NodeB1 = new Node("B1",1);
+		Node NodeC1 = new Node("C1",2);
+		
+		map1.addVertex(NodeA1, NodeB1, 5);
+		map1.addVertex(NodeA1, NodeC1, 3);
+		int size = map.join(map1,null);
+		assertEquals(8, size);
+		assertDistanceEquals(NodeA, NodeB, 5);
+		assertDistanceEquals(NodeA, NodeD, 2);
+		assertDistanceEquals(NodeE, NodeC, 1);
+		List<Node> dest = map.getDestinations(NodeA);
+		assertEquals(3, dest.size());
+		//the new ID of A1 is 5
+		List<Node> dest1 = map.getDestinations(new Node("A1",5));
+		assertEquals(2, dest1.size());
+	}
+
+	public void testJoinMapWithMutualNodes(){
+		DenseRoutesMap map1 = new DenseRoutesMap(3);
+		Node NodeE1 = new Node("E1",2);
+		Node NodeB1 = new Node("B1",1);
+		Node NodeC1 = new Node("C1",0);
+		
+		map1.addVertex(NodeE1, NodeB1, 5);
+		map1.addVertex(NodeE1, NodeC1, 3);
+		Map<Integer, Integer> mutual = new HashMap<Integer, Integer>();
+		mutual.put(2, 4);
+		int size = map.join(map1, mutual);
+		assertEquals(7, size);
+		assertDistanceEquals(NodeA, NodeB, 5);
+		assertDistanceEquals(NodeA, NodeD, 2);
+		assertDistanceEquals(NodeE, NodeC, 1);
+		List<Node> dest = map.getDestinations(NodeE);
+		assertEquals(3, dest.size());
+	}
+
 }

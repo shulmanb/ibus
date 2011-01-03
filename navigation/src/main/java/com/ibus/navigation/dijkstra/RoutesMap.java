@@ -1,6 +1,7 @@
 package com.ibus.navigation.dijkstra;
 
 import java.util.List;
+import java.util.Map;
 
 import com.ibus.map.Node;
 
@@ -36,4 +37,14 @@ public interface RoutesMap {
 	 * @return the transposed graph of this graph, as a new RoutesMap instance.
 	 */
 	public RoutesMap getInverse();
+
+	/**
+	 * Create map that combines two maps
+	 * The param map remains unchanged
+	 * @param mutual the nodes that are mutual to both maps, for example if id 2 node equals to 0 in the new map
+	 * the mutuals will contain {0=>2} entry
+	 * @param map1 the map to join with
+	 * @return the size of a new matrix, the node ids in the map are updated during the execution
+	 */
+	public int join(RoutesMap newMap, Map<Integer, Integer> mutual);
 }

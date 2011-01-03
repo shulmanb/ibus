@@ -52,4 +52,23 @@ public class StopTest {
 		assertTrue(!s.equals(s2));
 	}
 
+	@Test
+	public void testConnectedStops(){
+		Stop s = new Stop("d", new Point(0,0));
+		s.addNode(new Node("a",1));
+		s.addNode(new Node("b",2));
+		Stop s1 = new Stop("d1", new Point(0,0));
+		s1.addNode(new Node("a",1));
+		s1.addNode(new Node("d",2));
+		Stop s2 = new Stop("d2", new Point(0,0));
+		s2.addNode(new Node("b",1));
+		s2.addNode(new Node("c",2));
+
+		assertTrue(s.connectedTo(s1));
+		assertTrue(s.connectedTo(s2));
+		assertFalse(s2.connectedTo(s1));
+		
+		
+		
+	}
 }

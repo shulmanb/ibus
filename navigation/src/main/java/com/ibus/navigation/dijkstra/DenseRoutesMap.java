@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.ibus.map.Node;
 
@@ -14,7 +16,7 @@ import com.ibus.map.Node;
  */
 
 class DenseRoutesMap implements RoutesMap {
-	private final int[][] weights;
+	private int[][] weights;
 	private HashMap<Integer,Node> nodes = new HashMap<Integer,Node>();
 	private DynamicWeightCalculator weightCalculator = new DynamicWeightCalculator();
 	/**
@@ -102,5 +104,46 @@ class DenseRoutesMap implements RoutesMap {
 		}
 
 		return transposed;
+	}
+	@Override
+	public int join(RoutesMap otherMap, Map<Integer, Integer> mutuals) {
+		DenseRoutesMap newMap = (DenseRoutesMap)otherMap;
+		int[][] newWeights = newMap.weights;
+		int[][] temp = weights;
+		int length = temp.length;
+		//mutual nodes shouldn't be added twice, 
+		int newSize = (mutuals == null)?length+newWeights.length:length+newWeights.length-mutuals.size();
+		weights = new int[newSize][newSize];
+		for(int[] arr:weights){
+			Arrays.fill(arr, -1);
+		}
+		
+		for(int i =0; i < length;i++){
+			for(int j = 0;j<length;j++){
+				weights[i][j] = temp[i][j];
+			}
+		}
+		int newIndxI = length;
+		for(int i =0; i < newWeights.length;i++){
+			int indxI = (mutuals != null && mutuals.containsKey(i))?mutuals.get(i) :newIndxI++; 
+			int newIndxJ = length;
+			for(int j = 0;j<newWeights.length;j++){
+				int indxJ = (mutuals != null && mutuals.containsKey(j))?mutuals.get(j) :newIndxJ++;
+				weights[indxI][indxJ] = newWeights[i][j];
+			}
+		}
+		int newId = length;
+		for(Entry<Integer, Node> entry: newMap.nodes.entrySet()){
+			int currId = entry.getKey();
+			if(mutuals != null && mutuals.containsKey(currId)){
+				//skip the mutual nodes 
+				continue;
+			}
+			Node n = entry.getValue();
+			n.setId(newId);
+			nodes.put(newId, n);
+			newId++;
+		}
+		return nodes.size();
 	}
 }

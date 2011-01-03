@@ -97,4 +97,20 @@ public class Stop extends Point{
 	public String getId(){
 		return toString();
 	}
+
+	/**
+	 * checks wether the stops ae connected by a direct line
+	 * @param stop
+	 * @return
+	 */
+	public boolean connectedTo(Stop stop) {
+		for (Node n : stop.getNodes()) {
+			for (Node n1 : getNodes()) {
+				if(n.getLine().equals(n1.getLine())){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
