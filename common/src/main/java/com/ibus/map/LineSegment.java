@@ -12,7 +12,7 @@ public class LineSegment {
 	
 	private String line;
 	
-	private String segmentIndx;
+	private int segmentIndx;
 	/**
 	 * The start stop 
 	 */
@@ -35,11 +35,11 @@ public class LineSegment {
 	
 	
 	
-	public String getSegmentIndx() {
+	public int getSegmentIndx() {
 		return segmentIndx;
 	}
 
-	public void setSegmentIndx(String segmentIndx) {
+	public void setSegmentIndx(int segmentIndx) {
 		this.segmentIndx = segmentIndx;
 	}
 
@@ -93,6 +93,16 @@ public class LineSegment {
 
 	
 	public LineSegment(){}
+	
+	public LineSegment(LineSegment ls) {
+		this.lineId = ls.lineId;
+		this.line = ls.line;
+		this.start = ls.start;
+		this.end = ls.end;
+		this.points = ls.points;
+		this.duration = ls.duration;
+	}
+	
 	public LineSegment(String lineId, String line,Stop start, Stop end,
 			ArrayList<TimedPoint> points) {
 		this.lineId = lineId;

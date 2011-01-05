@@ -180,7 +180,7 @@ public class LanesMapTest extends TestCase{
 		lm.addStopToMap(stopD);
 		lm.addStopToMap(stopG);
 		lm.addStopToMap(stopH);
-		assertTrue(m.getWeight(nodeA, nodeD)>0);
+		assertTrue(m.getWeight(nodeA, nodeG)>0);
 	}
 	
 	public void testJoinMapsNoMutuals(){
@@ -279,8 +279,83 @@ public class LanesMapTest extends TestCase{
 		assertTrue(m.getWeight(nodeA, nodeH)>0);
 		//self connection
 		assertTrue(m.getWeight(nodeF, nodeD)>0);
+	}
+
+	public void testRouteWithBusChangeOnSameStop(){
+		RoutesMapFactory f = new RoutesMapFactory();
+		RoutesMap m = f.createMap(4);
+		LinesMap lm = new LinesMap(m, "");
+		//line 1
+		Node nodeA = new Node("1", 0);//32.773694, 35.013176//Shilon/Yigal Alon
+		Node nodeB = new Node("1", 1);//32.774696, 35.013755
+		Node nodeB1 = new Node("2", 2);//32.774696, 35.013755
+		Node nodeD = new Node("2", 3);//32.777411, 35.012360
 		
+
+		Point a = new Point((float)32.773694, (float)35.013176);
+		Point b = new Point((float)32.774696, (float)35.013755);
+		Point d = new Point((float)32.777411, (float)35.012360);
+
+
+		Stop stopA = new Stop("A", a).addNode(nodeA);////Shilon/Yigal Alon
+		Stop stopB = new Stop("B", b).addNode(nodeB).addNode(nodeB1);//, 
+		Stop stopD = new Stop("D", d).addNode(nodeD);//, 
+
+		LineSegment a_b = new LineSegment("1", stopA, stopB);
+		LineSegment b_d = new LineSegment("2", stopB, stopD);
+		lm.addLineSegmentToMap(a_b);
+		lm.addLineSegmentToMap(b_d);
+
+		m.addVertex(nodeA, nodeB, 1*60*1000);
+		m.addVertex(nodeB1, nodeD, 1*60*1000);
+		lm.addStopToMap(stopA);
+		lm.addStopToMap(stopB);
+		lm.addStopToMap(stopD);
+		assertEquals(15*60*1000,m.getWeight(nodeB, nodeB1));
+		StopsRoute sr = lm.findRoute(a, d);
+		assertEquals(2,sr.getRoute().size());
+		assertEquals(60*1000+60*1000+15*60*1000, sr.getWeight());
 		
 	}
-	
+
+	public void testRouteWithWalkingFromLineToLine(){
+		RoutesMapFactory f = new RoutesMapFactory();
+		RoutesMap m = f.createMap(4);
+		LinesMap lm = new LinesMap(m, "");
+		//line 1
+		Node nodeA = new Node("1", 0);
+		Node nodeB = new Node("1", 1);
+		Node nodeC = new Node("2", 2);
+		Node nodeD = new Node("2", 3);
+		
+
+		Point a = new Point(32.773694, 35.013176);
+		Point b = new Point(32.774696, 35.013755);
+		Point c = new Point(32.776396, 35.013878);
+		Point d = new Point(32.777411, 35.012360);
+
+
+		Stop stopA = new Stop("A", a).addNode(nodeA);
+		Stop stopB = new Stop("B", b).addNode(nodeB); 
+		Stop stopC = new Stop("C", c).addNode(nodeC); 
+		Stop stopD = new Stop("D", d).addNode(nodeD); 
+
+		LineSegment a_b = new LineSegment("1", stopA, stopB);
+		LineSegment c_d = new LineSegment("2", stopC, stopD);
+		lm.addLineSegmentToMap(a_b);
+		lm.addLineSegmentToMap(c_d);
+
+		m.addVertex(nodeA, nodeB, 1*60*1000);
+		m.addVertex(nodeC, nodeD, 1*60*1000);
+		lm.addStopToMap(stopA);
+		lm.addStopToMap(stopB);
+		lm.addStopToMap(stopC);
+		lm.addStopToMap(stopD);
+		StopsRoute sr = lm.findRoute(a, d);
+		assertEquals(3,sr.getRoute().size());
+		assertTrue(60*1000+60*1000+15*60*1000 < sr.getWeight());
+		
+	}
+
+
 }

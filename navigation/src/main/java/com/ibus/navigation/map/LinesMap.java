@@ -137,13 +137,28 @@ public class LinesMap {
 				route.weight, segments, dest);
 		Node org = null;
 		Node dst = null;
+		int segmentIndx = 0;
 		for (Node node : route.path) {
 			org = dst;
 			dst = node;
 			if (org != null) {
 				Edge edge = new Edge(stopsByNodeIds.get(org.getId()),
 						stopsByNodeIds.get(dst.getId()), org.getLine());
-				segments.add(this.segments.get(edge));
+				if(!edge.end.equals(edge.start)){
+					//skip changing stops on station
+					LineSegment ls = this.segments.get(edge);
+					if(ls == null){
+						//create an empty line segment, with null line
+						ls = new LineSegment();
+						ls.setEnd(edge.end);
+						ls.setStart(edge.start);
+					}else{
+						ls = new LineSegment(ls);
+					}
+					ls.setSegmentIndx(segmentIndx);
+					segments.add(ls);
+					segmentIndx++;
+				}
 			}
 		}
 		return ret;
