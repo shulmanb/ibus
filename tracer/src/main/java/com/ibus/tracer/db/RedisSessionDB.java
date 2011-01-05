@@ -65,14 +65,26 @@ public class RedisSessionDB implements ISessionDB, IReconnectable{
 
 	@Override @Retrieable
 	public void initiateSession(String clientid, String sessionId) {
+		String ses = jedis.get(clientid);
+		if(ses != null && !ses.isEmpty()){
+			if(pingSession(ses)){
+				return;
+			}
+			
+		}
 		jedis.hset(sessionId, "client", clientid);
+		jedis.set(clientid, sessionId);
 		jedis.expire(sessionId,SESSION_TTL);
+		jedis.expire(clientid,SESSION_TTL);
+
 	}
 
 	@Override @Retrieable
 	public boolean pingSession(String sessionId) {
 		if(1 == jedis.exists(sessionId)){
+			String client = jedis.hget(sessionId, "client");
 			jedis.expire(sessionId,SESSION_TTL);
+			jedis.expire(client,SESSION_TTL);
 			return true;
 		}
 		return false;
