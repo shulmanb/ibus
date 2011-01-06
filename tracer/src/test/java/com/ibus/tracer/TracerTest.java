@@ -2,7 +2,6 @@
  * 
  */
 package com.ibus.tracer;
-
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import com.ibus.tracer.db.ISessionDB;
 import com.ibus.tracer.db.RedisSessionDB;
 
 /**
+ * Integration tests for tracer with Reddis db
  * @author Home
  * 
  */
@@ -57,6 +57,37 @@ public class TracerTest {
 		ses = sm.createSession("testclient");
 	}
 
+	private StopsRoute preparePopulatedRouteWithLineSwitchOnStop() {
+		StopsRoute sr = preparePopulatedRoute_OneLS();
+		Stop start = new Stop(new Point(35.1036, 32.6596));
+		Stop end = new Stop(new Point(35.0942, 32.6535));
+		ArrayList<TimedPoint> pList = new ArrayList<TimedPoint>();
+		pList.add(new TimedPoint(35.103659, 32.659668, 0));//30
+		pList.add(new TimedPoint(35.101025, 32.657323, 70535));// 40
+		pList.add(new TimedPoint(35.097579, 32.655391, 91526));// 50
+		pList.add(new TimedPoint(35.094202, 32.653517, 106524));//60
+		sr.setDest(new TimedPoint(35.094202, 32.653517, 106524));
+		LineSegment ls = new LineSegment("2", "2", start, end, pList);
+		sr.getRoute().add(ls);
+		return sr;
+	}
+
+	private StopsRoute preparePopulatedRouteWithLineSwitchOnRemoteStopsWithWalkingDistance() {
+		StopsRoute sr = preparePopulatedRoute_OneLS();
+		Stop start = new Stop(new Point(35.0975, 32.6553));
+		Stop end = new Stop(new Point(35.0942, 32.6535));
+		ArrayList<TimedPoint> pList = new ArrayList<TimedPoint>();
+		pList.add(new TimedPoint(35.097579, 32.655391, 0));
+		pList.add(new TimedPoint(35.094202, 32.653517, 66524));
+		sr.setDest(new TimedPoint(35.094202, 32.653517, 106524));
+		LineSegment ls = new LineSegment("2", "2", start, end, pList);
+		LineSegment walkingLs = new LineSegment(null, null, new Stop(new Point(35.1036, 32.6596)), start, null);
+		sr.getRoute().add(walkingLs);
+		sr.getRoute().add(ls);
+		return sr;
+	}
+	
+	
 	private StopsRoute preparePopulatedRoute_OneLS() {
 		List<LineSegment> lsList = new LinkedList<LineSegment>();
 		Stop start = new Stop(new Point(35.1042, 32.6641));
@@ -508,7 +539,7 @@ public class TracerTest {
 			
 			String statusStr = jedis.hget(ses, "status");
 			Status stat = mapper.readValue(statusStr, Status.class);
-			assertEquals(StatusOnRoute.ON_THE_WAY_TO_DESTIANTION, stat.getStatus());
+			assertEquals(StatusOnRoute.ARRIVED, stat.getStatus());
 
 			String firststop = jedis.hget(ses + "status", "nextstop");
 			assertNotNull(firststop);
@@ -560,5 +591,102 @@ public class TracerTest {
 			fail("Exception Cought " + e.getMessage());
 		}
 	}
+	
+	@Test
+	public void testTrackSwitchLineOnStop(){
+		StopsRoute sr = preparePopulatedRouteWithLineSwitchOnStop();
+		try {
+			tracer.storeTemporaryRoute(sr);
+			tracer.checkInToRoute(ses, sr.getRouteId());
+			//arrive to station
+			TimedPoint p = new TimedPoint(35.104279, 32.664129, 0);//0
+			tracer.storeLocationOnRoute(ses, p);
+			String statusStr = jedis.hget(ses, "status");
+			Status stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.WAITING_TO_TRANSAPORT, stat.getStatus());
 
+			//move one point
+			TimedPoint p1 = new TimedPoint(35.105624,32.664444, 1);//9
+			tracer.storeLocationOnRoute(ses, p1);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.ON_THE_TANSPORT, stat.getStatus());
+
+			
+			//arrive to intermidiate station
+			TimedPoint p2 = new TimedPoint(35.103659, 32.659668, 106524);
+			tracer.storeLocationOnRoute(ses, p2);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.WAITING_TO_TRANSAPORT, stat.getStatus());
+
+			//move one point
+			TimedPoint p3 = new TimedPoint(35.101025, 32.657323, 70535);
+			tracer.storeLocationOnRoute(ses, p3);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.ON_THE_TANSPORT, stat.getStatus());
+		
+			
+			TimedPoint p4 = new TimedPoint(35.094202, 32.653517, 106524);
+			tracer.storeLocationOnRoute(ses, p4);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.ARRIVED, stat.getStatus());
+			
+			
+		} catch (Exception e) {
+			fail("Exception Cought " + e.getMessage());
+		}
+	}
+
+	@Test
+	public void testTrackSwitchLineOnRemoteStopsWithinWalkingDistance(){
+		StopsRoute sr = preparePopulatedRouteWithLineSwitchOnRemoteStopsWithWalkingDistance();
+		try {
+			tracer.storeTemporaryRoute(sr);
+			tracer.checkInToRoute(ses, sr.getRouteId());
+			//arrive to station
+			TimedPoint p = new TimedPoint(35.104279, 32.664129, 0);//0
+			tracer.storeLocationOnRoute(ses, p);
+			String statusStr = jedis.hget(ses, "status");
+			Status stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.WAITING_TO_TRANSAPORT, stat.getStatus());
+
+			//move one point
+			TimedPoint p1 = new TimedPoint(35.105624,32.664444, 1);//9
+			tracer.storeLocationOnRoute(ses, p1);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.ON_THE_TANSPORT, stat.getStatus());
+
+			
+			//arrive to intermidiate station
+			TimedPoint p2 = new TimedPoint(35.103659, 32.659668, 106524);
+			tracer.storeLocationOnRoute(ses, p2);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.ON_THE_WAY_TO_STATION, stat.getStatus());
+
+			//arrive to next station
+			TimedPoint p3 = new TimedPoint(35.097579, 32.655391, 0);
+			tracer.storeLocationOnRoute(ses, p3);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.WAITING_TO_TRANSAPORT, stat.getStatus());
+		
+			
+			//arrive to destination
+			TimedPoint p4 = new TimedPoint(35.094202, 32.653517, 106524);
+			tracer.storeLocationOnRoute(ses, p4);
+			statusStr = jedis.hget(ses, "status");
+			stat = mapper.readValue(statusStr, Status.class);
+			assertEquals(StatusOnRoute.ARRIVED, stat.getStatus());
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception Cought " + e.getMessage());
+		}
+	}
 }

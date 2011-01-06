@@ -24,7 +24,7 @@ public class Tracer implements ITracer {
 	}
 	
 	private static final double MAX_DISTANCE_FROM_POINT_ON_SEGMENT = 0.3;
-	private static final double NEAR_STOP = 0.01; //10 meters
+	private static final double NEAR_STOP = 0.015; //15 meters
 	
 	private ISessionDB sesDb = null;
 
@@ -91,7 +91,6 @@ public class Tracer implements ITracer {
 	public Status storeLocationOnRoute(String sessionId, TimedPoint point) 
 	 	   throws InvalidSessionException, UserOffRouteException{
 		//store as last reported location
-		checkSessionValidity(sessionId);
 		storeLocation(sessionId, point);
 		Status status = sesDb.getStatusOnRoute(sessionId);
 		if(status.getStatus() == StatusOnRoute.ON_THE_WAY_TO_DESTIANTION){
@@ -148,7 +147,8 @@ public class Tracer implements ITracer {
 				if(sos == StatusOnSegment.MOVED_TO_NEXT_SEGMENT){
 					//check if segment ended
 					reachedFinal = moveToNextSegment(sessionId, status);
-					if(reachedFinal){
+					if(reachedFinal || status.getStatus() == StatusOnRoute.ON_THE_WAY_TO_STATION){
+						//reached final destination or walking to next line
 						break;
 					}
 					segmentMoved = true;
@@ -156,6 +156,9 @@ public class Tracer implements ITracer {
 					break;
 				}
 			}
+		}
+		if(reachedFinal){
+			storeLocationToDestination(sessionId, point, status);
 		}
 		if(reachedFinal || segmentMoved || sos != StatusOnSegment.UNMOVED_ON_SEGMENT){
 			sesDb.updateStatus(sessionId,status);
@@ -180,8 +183,9 @@ public class Tracer implements ITracer {
 		int index = -1;
 		StatusOnSegment son = StatusOnSegment.UNMOVED_ON_SEGMENT;
 		boolean reachedEnd = false;
+		TimedPoint[] points;
 		for(;;){
-			TimedPoint[] points = sesDb.getNextPointsInSegment(sessionId,20);
+			points = sesDb.getNextPointsInSegment(sessionId,20);
 			if(points == null || points.length == 0){
 				//reached the end of this segment
 				son = StatusOnSegment.MOVED_TO_NEXT_SEGMENT;
@@ -205,7 +209,10 @@ public class Tracer implements ITracer {
 			//moved from the first point
 			//check if previous status was WAITING FOR TRANSPORT and now moved and update new status
 			if(status.getStatus() == StatusOnRoute.WAITING_TO_TRANSAPORT){
-				status.setStatus(StatusOnRoute.ON_THE_TANSPORT);
+				if(movIndx + index > 0 || points[0].distnaceFrom(point) > 0.005){
+					//check if actually moved from the station (more than 5 meters from station)
+					status.setStatus(StatusOnRoute.ON_THE_TANSPORT);
+				}
 			}
 			if(reachedEnd){
 				son = StatusOnSegment.MOVED_TO_NEXT_SEGMENT;
@@ -246,6 +253,11 @@ public class Tracer implements ITracer {
 	}
 	
 	
+	/**
+	 * @param sessionId
+	 * @param status
+	 * @return <code>true</code> if reached the last stop on route
+	 */
 	private boolean moveToNextSegment(String sessionId, Status status) {
 		//TODO: add a possibility to a remote segment (that requires walking, (cluster of stations))
 		LineSegment ls = sesDb.popNextSegment(sessionId);
@@ -255,17 +267,25 @@ public class Tracer implements ITracer {
 			return true;
 		}
 		sesDb.setNextSegmentStop(sessionId, ls.getEnd());
-		if(!ls.getLineId().equals(status.getCurrLineId())){
-			//we are switching the line
-			status.setCurrLineId(ls.getLineId());
-			status.setCurrLineName(ls.getLine());
-			status.setStatus(StatusOnRoute.WAITING_TO_TRANSAPORT);
-			//TODO: populate next line and estimates
+		if(ls.getLineId() == null){
+			//we are switching line and walking by foot to next line
+			status.setCurrLineId(null);
+			status.setCurrLineName(null);
+			status.setStatus(StatusOnRoute.ON_THE_WAY_TO_STATION);
+		}else{
+			if(!ls.getLineId().equals(status.getCurrLineId())){
+				//we are switching the line
+				status.setCurrLineId(ls.getLineId());
+				status.setCurrLineName(ls.getLine());
+				status.setStatus(StatusOnRoute.WAITING_TO_TRANSAPORT);
+				//TODO: populate next line and estimates
+			}
+			//current segment will be stored as a list of points, points that are done will be removed
+			for(TimedPoint p:ls.getPoints()){
+				sesDb.addPointForNextSegment(sessionId,p);
+			}
 		}
-		//current segment will be stored as a list of points, points that are done will be removed
-		for(TimedPoint p:ls.getPoints()){
-			sesDb.addPointForNextSegment(sessionId,p);
-		}
+		
 		return false;
 	}
 	

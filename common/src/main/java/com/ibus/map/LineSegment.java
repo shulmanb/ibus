@@ -110,7 +110,9 @@ public class LineSegment {
 		this.start = start;
 		this.end = end;
 		this.points = points;
-		this.duration = (int) (points.get(points.size()-1).time - points.get(0).time);
+		if(points != null){
+			this.duration = (int) (points.get(points.size()-1).time - points.get(0).time);
+		}
 	}
 	public LineSegment(String laneId, Stop start, Stop end) {
 		this.lineId = laneId;
