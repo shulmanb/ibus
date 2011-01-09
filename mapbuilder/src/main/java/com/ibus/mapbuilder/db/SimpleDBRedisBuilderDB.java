@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import redis.clients.jedis.Jedis;
+
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
@@ -29,6 +31,17 @@ import com.ibus.map.*;
 public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 	private AmazonSimpleDB sdb;
 
+	
+	/**
+	 * This nconstructor should be used for unit tests
+	 * @param jedis
+	 * @param sdb
+	 */
+	public SimpleDBRedisBuilderDB(Jedis jedis, AmazonSimpleDBClient sdb){
+		super(jedis);
+		this.sdb = sdb;
+	}
+	
 	@Inject
 	public SimpleDBRedisBuilderDB(
 			@Named("REDIS HOST")String redisHost, 

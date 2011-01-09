@@ -5,10 +5,6 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 import com.ibus.map.Point;
-import com.ibus.mapbuilder.Line1;
-import com.ibus.mapbuilder.Line2;
-import com.ibus.mapbuilder.PointContainer;
-import com.ibus.mapbuilder.StationContainer;
 import com.ibus.mapbuilder.db.SimpleDBRedisBuilderDB;
 //@Ignore
 public class SimpleDBRedisBuilder {

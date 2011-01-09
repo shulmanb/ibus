@@ -49,6 +49,10 @@ public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectab
 	private String host;
 	private int port;
 	
+	public AbstractRedisBuilderDB(Jedis jedis){
+		this.jedis = jedis;
+	}
+	
 	public AbstractRedisBuilderDB(String redisHost, int redisPort) {
 		this.jedis = new Jedis(redisHost, redisPort);
 		this.host = redisHost;

@@ -1,4 +1,4 @@
-package com.ibus.mapbuilder;
+
 
 public class PointContainer {
 	public static class Point {

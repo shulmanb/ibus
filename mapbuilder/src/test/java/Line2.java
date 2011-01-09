@@ -1,4 +1,4 @@
-package com.ibus.mapbuilder;
+
 
 public class Line2 {
 	public static String[] LINE2_DATA = new String[] {
