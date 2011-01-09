@@ -24,8 +24,8 @@ public class RedisSessionDB implements ISessionDB, IReconnectable{
 	private Jedis jedis;
 	private ObjectMapper mapper = new ObjectMapper();
 	
-	private static final int SESSION_TTL = 60*60*12;
-	private static final int ROUTE_TTL = 60*5;
+	public static final int SESSION_TTL = 60*60*12;
+	public static final int ROUTE_TTL = 60*5;
 	private String host;
 	private int port;
 	
@@ -64,18 +64,16 @@ public class RedisSessionDB implements ISessionDB, IReconnectable{
 	}
 
 	@Override @Retrieable
-	public void initiateSession(String clientid, String sessionId) {
+	public String initiateSession(String clientid, String sessionId) {
 		String ses = jedis.get(clientid);
-		if(ses != null && !ses.isEmpty()){
-			if(pingSession(ses)){
-				return;
-			}
-			
+		if(ses != null && !ses.isEmpty() && pingSession(ses)){
+				return ses;
 		}
 		jedis.hset(sessionId, "client", clientid);
 		jedis.set(clientid, sessionId);
 		jedis.expire(sessionId,SESSION_TTL);
 		jedis.expire(clientid,SESSION_TTL);
+		return sessionId;
 
 	}
 

@@ -33,8 +33,7 @@ public class SessionManager implements ISessionManager {
 	@Override
 	public String createSession(String clientid) {
 		String sessionId = UUID.randomUUID().toString();
-		sesDb.initiateSession(clientid, sessionId);
-		return sessionId;
+		return sesDb.initiateSession(clientid, sessionId);
 	}
 
 	/* (non-Javadoc)

@@ -22,8 +22,9 @@ public interface ISessionDB {
 	 * Stores new session in the db
 	 * @param clientid
 	 * @param sessionId
+	 * @return the sessionid for the created sesion (either received or existing)
 	 */
-	public void initiateSession(String clientid, String sessionId);
+	public String initiateSession(String clientid, String sessionId);
 
 	/**
 	 * Checks if the session is still valid and increases its ttl
