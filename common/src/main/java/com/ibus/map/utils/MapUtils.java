@@ -105,4 +105,29 @@ public class MapUtils {
 		return p;
 	}
 	
+	/**
+	 * Calculates metric distance between two latitudes, in km
+	 * @param northLat
+	 * @param southLat
+	 * @return
+	 */
+	public static int calculateLatitudeDistance(double northLat, double southLat){
+		double distance = new Point(0,northLat).distnaceFrom(new Point(0,southLat));
+		return (int)distance;
+	}
+	
+	/**
+	 * Calculates metric distance between two longitudes, in km
+	 * @param westLon
+	 * @param eastLon
+	 * @param lat
+	 * @return
+	 */
+	public static int calculateLongitudeDistance(double westLon, double eastLon, double lat){
+		double distance = new Point(westLon,lat).distnaceFrom(new Point(eastLon,lat));
+		return (int)distance;
+		
+	}
+	
+	
 }
