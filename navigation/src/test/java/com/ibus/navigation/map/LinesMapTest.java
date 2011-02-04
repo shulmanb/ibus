@@ -12,7 +12,7 @@ import com.ibus.navigation.dijkstra.RoutesMapFactory;
 import com.ibus.navigation.map.db.IMapDBLoader;
 
 
-public class LanesMapTest extends TestCase{
+public class LinesMapTest extends TestCase{
 	
 	
 	public static class DumyComplexMapDBLoader implements IMapDBLoader{
@@ -114,7 +114,7 @@ public class LanesMapTest extends TestCase{
 	
 	public void testComplexRoute(){
 		LinesMapFactory f = new LinesMapFactory();
-		f.setMapLoader(new LanesMapTest.DumyComplexMapDBLoader()); 
+		f.setMapLoader(new LinesMapTest.DumyComplexMapDBLoader()); 
 		LinesMap map = f.loadMap("ttt");
 		//start yigal alon  32.773077, 35.01240
 		//end 32.784052, 35.014849
@@ -128,7 +128,7 @@ public class LanesMapTest extends TestCase{
 	
 	public void testClosestStop(){
 		LinesMapFactory f = new LinesMapFactory();
-		f.setMapLoader(new LanesMapTest.DumyComplexMapDBLoader()); 
+		f.setMapLoader(new LinesMapTest.DumyComplexMapDBLoader()); 
 		LinesMap map = f.loadMap("ttt");
 		Stop[] stops = map.findStopsNearby(new Point((float)32.773077,(float)35.01240),1);
 		assertEquals("A", stops[0].getDesc());
@@ -139,7 +139,7 @@ public class LanesMapTest extends TestCase{
 	
 	public void testStopsInArea(){
 		LinesMapFactory f = new LinesMapFactory();
-		f.setMapLoader(new LanesMapTest.DumyComplexMapDBLoader()); 
+		f.setMapLoader(new LinesMapTest.DumyComplexMapDBLoader()); 
 		LinesMap map = f.loadMap("ttt");
 		Stop[] stops = map.getStopsInArear(new Point((float)32.773077,(float)35.01240),500,500);
 		assertTrue(stops.length== 10);
@@ -225,7 +225,7 @@ public class LanesMapTest extends TestCase{
 		
 		
 	}
-	public void testJoinMapsWithMutuals(){
+	public void h(){
 		RoutesMapFactory f = new RoutesMapFactory();
 		RoutesMap m = f.createMap(3);
 		RoutesMap m1 = f.createMap(4);

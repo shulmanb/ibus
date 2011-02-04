@@ -17,7 +17,7 @@ import com.ibus.map.Point;
  */
 public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectable {
 
-	static class PointContainer{
+	public static class PointContainer{
 		double lat;
 		double lon;
 		long ts;
@@ -44,7 +44,7 @@ public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectab
 			return this;
 		}
 	}
-	private Jedis jedis;
+	protected Jedis jedis;
 	protected Gson gson = new Gson();
 	private String host;
 	private int port;

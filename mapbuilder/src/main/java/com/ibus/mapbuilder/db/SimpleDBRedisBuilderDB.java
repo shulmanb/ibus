@@ -27,6 +27,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.ibus.map.*;
+import com.ibus.mapbuilder.db.AbstractRedisBuilderDB.PointContainer;
 
 public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 	private AmazonSimpleDB sdb;
@@ -55,6 +56,7 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 
 	@Override
 	public void flushRoute(String sessionID) {
+		try{
 		String details = getLineDetails(sessionID);
 		StringTokenizer tkn = new StringTokenizer(details, ":");
 		String submap = tkn.nextToken();
@@ -69,6 +71,9 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		store(lineName, sessionID,submap, segments, stations, linePoints);
 		
 		clearSession(sessionID);
+		}catch(Throwable th){
+			th.printStackTrace();
+		}
 	}
 
 	private void store(String lineName,String lineId, String submap, List<LineSegment> segments, ArrayList<Stop> stations, ArrayList<Point> linePoints) {
@@ -151,10 +156,14 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 			Collection<ReplaceableItem> items, List<Stop> stationsToAlter) {
 		if(!stationsToAlter.isEmpty()){
 			StringBuilder sb = new StringBuilder("select * from "+STATIONS_DETAILS+" where ");
+			boolean first = true;
 			for(Stop st:stationsToAlter){
-				sb.append("itemName=\""+st.getId()+"\",");
+				if(!first){
+					sb.append(" or ");
+				}
+				sb.append("itemName=\""+st.getId()+"\"");
+				first = false;
 			}
-			sb.deleteCharAt(sb.lastIndexOf(","));
 			SelectRequest sr = new SelectRequest(sb.toString());
 			SelectResult res = sdb.select(sr);
 			List<Item> existing = res.getItems();

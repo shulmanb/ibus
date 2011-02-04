@@ -7,7 +7,7 @@ import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
 import com.ibus.connectivity.Retrieable;
 import com.ibus.connectivity.RetryRedisOperation;
-import com.ibus.navigation.map.LanesMapTest;
+import com.ibus.navigation.map.LinesMapTest;
 import com.ibus.navigation.map.LinesMapFactory;
 import com.ibus.navigation.map.MapQuery;
 import com.ibus.navigation.map.Navigator;
