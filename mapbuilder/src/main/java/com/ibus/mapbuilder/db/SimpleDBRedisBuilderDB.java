@@ -89,21 +89,22 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		
 		List<String> stationsIdsToAlter = new LinkedList<String>();
 		List<Stop> stationsToAlter = new LinkedList<Stop>();
+		ArrayList<Stop> stationsToAdd = new ArrayList<Stop>(stations);
 		
 		GetAttributesResult result = sdb.getAttributes(new GetAttributesRequest(STATIONS, submap));
 		List<Attribute> existingStations = result.getAttributes();
 		for(Attribute attr:existingStations){
 			Point p = gson.fromJson(attr.getValue(),Point.class);
 			Stop s = new Stop(p);
-			int indx = stations.indexOf(s);
+			int indx = stationsToAdd.indexOf(s);
 			if(indx > -1){
 				stationsIdsToAlter.add(attr.getValue());
-				stationsToAlter.add(stations.get(indx));
-				stations.remove(indx);
+				stationsToAlter.add(stationsToAdd.get(indx));
+				stationsToAdd.remove(indx);
 			}
 		}
 		//add new stations
-		addNewStationsToSubmap(submap, stations);
+		addNewStationsToSubmap(submap, stationsToAdd);
 
 		BatchPutAttributesRequest bpar = new BatchPutAttributesRequest();
 		bpar.setDomainName(STATIONS_DETAILS);
@@ -112,10 +113,12 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		//retrieve existing stations and add line to them
 		addExistingStationsToBatch(lineId,lineName, items, stationsToAlter);
 
-		addNewStationsToBatch(submap, lineId,lineName, stations, items);
+		addNewStationsToBatch(submap, lineId,lineName, stationsToAdd, items);
 		//store in batch all
-		bpar.setItems(items);
-		sdb.batchPutAttributes(bpar);
+		if(!items.isEmpty()){
+			bpar.setItems(items);
+			sdb.batchPutAttributes(bpar);
+		}
 		//store list of stations for line
 		storeStationsList(stations, submap, lineId);
 	}
@@ -167,12 +170,18 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 				if(!first){
 					sb.append(" or ");
 				}
-				sb.append("itemName=\""+st.getId()+"\"");
+				sb.append("itemName()=\""+st.getId()+"\"");
 				first = false;
 			}
 			SelectRequest sr = new SelectRequest(sb.toString());
 			SelectResult res = sdb.select(sr);
 			List<Item> existing = res.getItems();
+			while(res.getNextToken()!=null && !res.getNextToken().isEmpty()){
+				sr.setNextToken(res.getNextToken());
+				res = sdb.select(sr);
+				existing.addAll(res.getItems());
+			}
+
 			for(Item item:existing){
 				ReplaceableItem ri = new ReplaceableItem(item.getName()); 
 				for(Attribute attr:item.getAttributes()){
@@ -182,16 +191,15 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 						lst.add(line);
 						ReplaceableAttribute ra = new ReplaceableAttribute(attr.getName(),gson.toJson(lst,collectionType),true);
 						ri.withAttributes(ra);
-						items.add(ri);
 					}else if(attr.getName().equalsIgnoreCase(LINES_NAMES_ATTR)){
 						Type collectionType = new TypeToken<LinkedList<String>>(){}.getType();
 						List<String> lst = gson.fromJson(attr.getValue(), collectionType);
 						lst.add(lineName);
 						ReplaceableAttribute ra = new ReplaceableAttribute(attr.getName(),gson.toJson(lst,collectionType),true);
 						ri.withAttributes(ra);
-						items.add(ri);
 					}
 				}
+				items.add(ri);
 			}
 		}
 	}

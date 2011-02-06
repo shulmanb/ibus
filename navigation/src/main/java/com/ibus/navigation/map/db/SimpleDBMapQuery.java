@@ -11,10 +11,13 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.amazonaws.services.simpledb.model.Attribute;
+import com.amazonaws.services.simpledb.model.BatchPutAttributesRequest;
 import com.amazonaws.services.simpledb.model.DeleteAttributesRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesResult;
 import com.amazonaws.services.simpledb.model.Item;
+import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
+import com.amazonaws.services.simpledb.model.ReplaceableItem;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
 import com.google.gson.Gson;
@@ -55,10 +58,10 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 	public Point[] getLinePoints(String lineId) {
 		String query = 	"select * from "+SEGMENT_POINTS+" where itemName() like '"
 			+ lineId + "%' order by itemName() Asc";
-		SelectRequest selectRequest = new SelectRequest(query);
-		SelectResult res = sdb.select(selectRequest);
+		List<Item> items = getAllItems(query);
+
 		ArrayList<Point> linePoints = new ArrayList<Point>();
-		for (Item itm : res.getItems()) {
+		for (Item itm : items) {
 			Point[] tmp = new Point[itm.getAttributes().size()];
 			for (Attribute attr : itm.getAttributes()) {
 				int indx = Integer.valueOf(attr.getName());
@@ -68,6 +71,18 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 			linePoints.addAll(Arrays.asList(tmp));
 		}
 		return linePoints.toArray(new Point[0]);
+	}
+
+	private List<Item> getAllItems(String query) {
+		SelectRequest selectRequest = new SelectRequest(query);
+		SelectResult res = sdb.select(selectRequest);
+		List<Item> items = res.getItems();
+		while(res.getNextToken()!=null && !res.getNextToken().isEmpty()){
+			selectRequest.setNextToken(res.getNextToken());
+			res = sdb.select(selectRequest);
+			items.addAll(res.getItems());
+		}
+		return items;
 	}
 
 	private StopDetails toStopDetails(List<Attribute> list) {
@@ -102,11 +117,11 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 
 	@Override
 	public StopDetails[] getAllStationsInSubmap(String submap) {
-		SelectRequest selectRequest = new SelectRequest("select * from "+STATIONS_DETAILS+" where "+SUBMAP_ATTR+" = '"+submap+"'");
-		SelectResult res = sdb.select(selectRequest);
-		StopDetails[] stations = new StopDetails[res.getItems().size()];
+		String query = "select * from "+STATIONS_DETAILS+" where "+SUBMAP_ATTR+" = '"+submap+"'";
+		List<Item> items = getAllItems(query);
+		StopDetails[] stations = new StopDetails[items.size()];
 		int i = 0;
-		for(Item itm:res.getItems()){
+		for(Item itm:items){
 			stations[i] = toStopDetails(itm.getAttributes());
 			i++;
 		}
@@ -124,11 +139,11 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 		query.append(" intersection  "+LON_ATTR+" >= '"+left.getLongitude()+"'");
 		//add higher longitude
 		query.append(" intersection  "+LON_ATTR+" <= '"+right.getLongitude()+"'");
-		SelectRequest selectRequest = new SelectRequest(query.toString());
-		SelectResult res = sdb.select(selectRequest);
-		StopDetails[] stations = new StopDetails[res.getItems().size()];
+		List<Item> items = getAllItems(query.toString());
+
+		StopDetails[] stations = new StopDetails[items.size()];
 		int i = 0;
-		for(Item itm:res.getItems()){
+		for(Item itm:items){
 			stations[i] = toStopDetails(itm.getAttributes());
 			i++;
 		}
@@ -146,11 +161,10 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 		query.append(" intersection  "+LON_ATTR+" >= '"+left.getLongitude()+"'");
 		//add higher longitude
 		query.append(" intersection  "+LON_ATTR+" <= '"+right.getLongitude()+"'");
-		SelectRequest selectRequest = new SelectRequest(query.toString());
-		SelectResult res = sdb.select(selectRequest);
-		StopDetails[] stations = new StopDetails[res.getItems().size()];
+		List<Item> items = getAllItems(query.toString());
+		StopDetails[] stations = new StopDetails[items.size()];
 		int i = 0;
-		for(Item itm:res.getItems()){
+		for(Item itm:items){
 			stations[i] = toStopDetails(itm.getAttributes());
 			i++;
 		}
@@ -163,6 +177,7 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 		List<String> segmentIds = new LinkedList<String>();
 		List<String> segments = new LinkedList<String>();
 		String submap = "";
+		String lineName = "";
 		for(Attribute attr:lSegments.getAttributes()){
 			try{
 				Integer.parseInt(attr.getName());
@@ -171,6 +186,8 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 			}catch(NumberFormatException e){
 				if(attr.getName().equals(SUBMAP_ATTR)){
 					submap = attr.getValue();
+				}else if(attr.getName().equals(LINE_NAME_ATTR)){
+					lineName = attr.getValue();
 				}
 			}
 		}
@@ -193,11 +210,10 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 		}
 		sb.append(")");
 		String query = 	sb.toString();
-		SelectRequest selectRequest = new SelectRequest(query);
-		SelectResult res = sdb.select(selectRequest);
+		List<Item> items = getAllItems(query);
 
 		List<String> stationsToDelete = new LinkedList<String>();
-		for(Item itm:res.getItems()){
+		for(Item itm:items){
 			for(Attribute attr:itm.getAttributes()){
 				if(attr.getName().equals(LINES_ATTR)){
 					Type collectionType = new TypeToken<LinkedList<String>>(){}.getType();
@@ -208,8 +224,36 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 				}
 			}
 		}
+		Collection<ReplaceableItem> stationDetailsToUpdate = new LinkedList<ReplaceableItem>();
+		for(Item itm:items){
+			if(stationsToDelete.contains(itm.getName())){
+				continue;
+			}
+			ReplaceableItem ri = new ReplaceableItem(itm.getName());
+			stationDetailsToUpdate.add(ri);
+			for(Attribute attr:itm.getAttributes()){
+				if(attr.getName().equalsIgnoreCase(LINES_ATTR)){
+					Type collectionType = new TypeToken<LinkedList<String>>(){}.getType();
+					List<String> lst = gson.fromJson(attr.getValue(), collectionType);
+					lst.remove(lineId);
+					ReplaceableAttribute ra = new ReplaceableAttribute(attr.getName(),gson.toJson(lst,collectionType),true);
+					ri.withAttributes(ra);
+				}else if(attr.getName().equalsIgnoreCase(LINES_NAMES_ATTR)){
+					Type collectionType = new TypeToken<LinkedList<String>>(){}.getType();
+					List<String> lst = gson.fromJson(attr.getValue(), collectionType);
+					lst.remove(lineName);
+					ReplaceableAttribute ra = new ReplaceableAttribute(attr.getName(),gson.toJson(lst,collectionType),true);
+					ri.withAttributes(ra);
+				}			}
+		}
 		
-		
+		if(!stationDetailsToUpdate.isEmpty()){
+			BatchPutAttributesRequest bpar = new BatchPutAttributesRequest();
+			bpar.setDomainName(STATIONS_DETAILS);
+			bpar.setItems(stationDetailsToUpdate);
+			sdb.batchPutAttributes(bpar);
+		}
+
 		//delete needed from ibus_stations
 		Collection<Attribute> attrs = new LinkedList<Attribute>();
 		for(String station:stationsToDelete){
@@ -217,9 +261,11 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 			attr.setName(station);
 			attrs.add(attr);
 		}
-		DeleteAttributesRequest dar = new DeleteAttributesRequest(STATIONS, submap);
-		dar.setAttributes(attrs);
-		sdb.deleteAttributes(dar);
+		if(!attrs.isEmpty()){
+			DeleteAttributesRequest dar = new DeleteAttributesRequest(STATIONS, submap);
+			dar.setAttributes(attrs);
+			sdb.deleteAttributes(dar);
+		}
 		
 		
 		//delete needed from ibus_stations_details
@@ -243,10 +289,10 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 	@Override
 	public Line[] getLinesInSubmap(String submap) {
 		String query = 	"select lineName from "+LINE_SEGMENTS+" where submap =  '"+submap+"'";
-		SelectRequest selectRequest = new SelectRequest(query);
-		SelectResult res = sdb.select(selectRequest);
+		List<Item> items = getAllItems(query);
+
 		List<Line> ret = new LinkedList<Line>();
-		for(Item ln : res.getItems()){
+		for(Item ln :items){
 			Line line = new Line();
 			line.setId(ln.getName());
 			line.setName(ln.getAttributes().get(0).getValue());

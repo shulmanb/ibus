@@ -1,0 +1,12 @@
+Listening for transport dt_socket at address: 3232
+=> Booting WEBrick
+=> Rails 3.0.1 application starting in development on http://0.0.0.0:3000
+=> Call with -d to detach
+=> Ctrl-C to shutdown server
+
+
+Started POST "/lines/fb8d25ac-2635-457a-a88a-9eab9cb989bf/laststation.json" for 127.0.0.1 at Fri Feb 04 12:52:31 +0200 2011
+  Processing by MapbuilderController#complete as JSON
+  Parameters: {"data"=>{"long"=>"35_110576", "lat"=>"32_665799", "ts"=>1296803047}, "id"=>"fb8d25ac-2635-457a-a88a-9eab9cb989bf"}
+Rendered text template (0.0ms)
+Completed 200 OK in 4499ms (Views: 14.0ms)
