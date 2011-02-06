@@ -4,6 +4,7 @@ import static com.ibus.map.utils.SimpleDBNames.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -56,7 +57,6 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 
 	@Override
 	public void flushRoute(String sessionID) {
-		try{
 		String details = getLineDetails(sessionID);
 		StringTokenizer tkn = new StringTokenizer(details, ":");
 		String submap = tkn.nextToken();
@@ -71,9 +71,6 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		store(lineName, sessionID,submap, segments, stations, linePoints);
 		
 		clearSession(sessionID);
-		}catch(Throwable th){
-			th.printStackTrace();
-		}
 	}
 
 	private void store(String lineName,String lineId, String submap, List<LineSegment> segments, ArrayList<Stop> stations, ArrayList<Point> linePoints) {
@@ -136,8 +133,13 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 
 	private void addNewStationsToBatch(String submap, String line,String lineName,
 			ArrayList<Stop> stations, Collection<ReplaceableItem> items) {
+		HashSet<String> addedIds = new HashSet<String>();
 		for(Stop st:stations){
+			if(addedIds.contains(st.getId())){
+				continue;
+			}
 			ReplaceableItem item = new ReplaceableItem(st.getId());
+			addedIds.add(st.getId());
 			Collection<ReplaceableAttribute> col = new LinkedList<ReplaceableAttribute>();
 			col.add(new ReplaceableAttribute(SUBMAP_ATTR,submap,false));
 			col.add(new ReplaceableAttribute(LAT_ATTR,String.valueOf(st.getStopsPoint().getLatitude()),false));
