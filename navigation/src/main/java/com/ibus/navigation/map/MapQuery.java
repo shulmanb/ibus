@@ -149,6 +149,6 @@ public class MapQuery implements IMapQuery {
 	public Lines getLinesInSubmap(String submap){
 		Lines ret = new Lines();
 		ret.setLines(db.getLinesInSubmap(submap));
-		return null;
+		return ret;
 	}
 }
