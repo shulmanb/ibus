@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import redis.clients.jedis.Jedis;
 
@@ -83,6 +84,9 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 	private void storeStations(String submap, String lineId,String lineName,ArrayList<Stop> stations) {
 		//store stops details
 		//retrive all stops for the submap
+		
+		//TODO: deal with multiple recorders, i.e. stop details are not available....
+		
 		List<String> stationsIdsToAlter = new LinkedList<String>();
 		List<Stop> stationsToAlter = new LinkedList<Stop>();
 		
@@ -99,7 +103,7 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 			}
 		}
 		//add new stations
-		addNewStationsToSubmap(submap, stations, existingStations);
+		addNewStationsToSubmap(submap, stations);
 
 		BatchPutAttributesRequest bpar = new BatchPutAttributesRequest();
 		bpar.setDomainName(STATIONS_DETAILS);
@@ -193,14 +197,12 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 	}
 
 	private void addNewStationsToSubmap(String submap,
-			ArrayList<Stop> stations, List<Attribute> existingStations) {
+			ArrayList<Stop> stations) {
 		if(!stations.isEmpty()){
 			List<ReplaceableAttribute> newStations = new LinkedList<ReplaceableAttribute>();
-			int i = existingStations.size();
 			for(Stop st:stations){
-				ReplaceableAttribute ra = new ReplaceableAttribute(String.valueOf(i), gson.toJson(st.getStopsPoint()), false);
+				ReplaceableAttribute ra = new ReplaceableAttribute(st.getId(), gson.toJson(st.getStopsPoint()), false);
 				newStations.add(ra);
-				i++;
 			}
 			PutAttributesRequest putAttributesRequest = new PutAttributesRequest(STATIONS,submap, newStations);
 			sdb.putAttributes(putAttributesRequest);

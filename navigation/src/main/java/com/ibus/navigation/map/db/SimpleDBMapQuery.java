@@ -1,21 +1,27 @@
 package com.ibus.navigation.map.db;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.amazonaws.services.simpledb.model.Attribute;
+import com.amazonaws.services.simpledb.model.DeleteAttributesRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesResult;
 import com.amazonaws.services.simpledb.model.Item;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.ibus.map.Line;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopDetails;
@@ -149,5 +155,103 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 			i++;
 		}
 		return stations;
+	}
+
+	@Override
+	public void deleteLineById(String lineId) {
+		GetAttributesResult lSegments = sdb.getAttributes(new GetAttributesRequest(LINE_SEGMENTS, lineId));
+		List<String> segmentIds = new LinkedList<String>();
+		List<String> segments = new LinkedList<String>();
+		String submap = "";
+		for(Attribute attr:lSegments.getAttributes()){
+			try{
+				Integer.parseInt(attr.getName());
+				segmentIds.add(lineId+"_"+attr.getName());
+				segments.add(attr.getValue());
+			}catch(NumberFormatException e){
+				if(attr.getName().equals(SUBMAP_ATTR)){
+					submap = attr.getValue();
+				}
+			}
+		}
+
+		GetAttributesResult segmentStations = sdb.getAttributes(new GetAttributesRequest(LINE_STATIONS, lineId));
+		List<String> stationIds = new LinkedList<String>();
+		for(Attribute attr:segmentStations.getAttributes()){
+			stationIds.add(gson.fromJson(attr.getValue(), Stop.class).getId());
+		}
+
+		//retrieve stations fromibus_stations
+		StringBuilder sb = new StringBuilder("select * from "+STATIONS_DETAILS+" where itemName() in(");
+		boolean first = true;
+		for(String stId:stationIds){
+			if(!first){
+				sb.append(" , ");
+			}
+			first = false;
+			sb.append("'"+stId+"'");
+		}
+		sb.append(")");
+		String query = 	sb.toString();
+		SelectRequest selectRequest = new SelectRequest(query);
+		SelectResult res = sdb.select(selectRequest);
+
+		List<String> stationsToDelete = new LinkedList<String>();
+		for(Item itm:res.getItems()){
+			for(Attribute attr:itm.getAttributes()){
+				if(attr.getName().equals(LINES_ATTR)){
+					Type collectionType = new TypeToken<LinkedList<String>>(){}.getType();
+					List<String> lst = gson.fromJson(attr.getValue(), collectionType);
+					if(lst.size() == 1){
+						stationsToDelete.add(itm.getName());
+					}
+				}
+			}
+		}
+		
+		
+		//delete needed from ibus_stations
+		Collection<Attribute> attrs = new LinkedList<Attribute>();
+		for(String station:stationsToDelete){
+			Attribute attr = new Attribute();
+			attr.setName(station);
+			attrs.add(attr);
+		}
+		DeleteAttributesRequest dar = new DeleteAttributesRequest(STATIONS, submap);
+		dar.setAttributes(attrs);
+		sdb.deleteAttributes(dar);
+		
+		
+		//delete needed from ibus_stations_details
+		for(String station:stationsToDelete){
+			sdb.deleteAttributes(new DeleteAttributesRequest(STATIONS_DETAILS, station));
+		}
+
+		
+		
+		//delete all segment points
+		for(String segment:segmentIds){
+			sdb.deleteAttributes(new DeleteAttributesRequest(SEGMENT_POINTS, segment));
+		}
+		//delete line stations entry
+		sdb.deleteAttributes(new DeleteAttributesRequest(LINE_STATIONS, lineId));
+		//delete line segments entry
+		sdb.deleteAttributes(new DeleteAttributesRequest(LINE_SEGMENTS, lineId));
+		
+	}
+
+	@Override
+	public Line[] getLinesInSubmap(String submap) {
+		String query = 	"select lineName from "+LINE_SEGMENTS+" where submap =  '"+submap+"'";
+		SelectRequest selectRequest = new SelectRequest(query);
+		SelectResult res = sdb.select(selectRequest);
+		List<Line> ret = new LinkedList<Line>();
+		for(Item ln : res.getItems()){
+			Line line = new Line();
+			line.setId(ln.getName());
+			line.setName(ln.getAttributes().get(0).getValue());
+			ret.add(line);
+		}
+		return ret.toArray(new Line[0]);
 	}
 }
