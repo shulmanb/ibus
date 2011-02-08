@@ -6,33 +6,32 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-@Ignore
 public class MapBuilderIntegTest {
 
-	@Before
+	@Before @Ignore
 	public void setUp() throws Exception {
 	}
 
-	@After
+	@After @Ignore
 	public void tearDown() throws Exception {
 	}
 
-	@Test
+	@Test @Ignore
 	public void testInitiateRouteRecording() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testAddPoint() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testAddStation() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testFinishRouteRecording() {
 		fail("Not yet implemented");
 	}

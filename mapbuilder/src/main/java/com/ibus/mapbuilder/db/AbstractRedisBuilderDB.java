@@ -1,11 +1,13 @@
 package com.ibus.mapbuilder.db;
 
-import java.io.IOException;
 import java.util.List;
 
+
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import com.google.gson.Gson;
+import com.ibus.connectivity.AbstractRedisStorage;
 import com.ibus.connectivity.IReconnectable;
 import com.ibus.connectivity.Retrieable;
 import com.ibus.map.Point;
@@ -15,7 +17,7 @@ import com.ibus.map.Point;
  * @author Home
  *
  */
-public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectable {
+public abstract class AbstractRedisBuilderDB extends AbstractRedisStorage implements IBuilderDB {
 
 	public static class PointContainer{
 		double lat;
@@ -44,30 +46,18 @@ public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectab
 			return this;
 		}
 	}
-	protected Jedis jedis;
 	protected Gson gson = new Gson();
-	private String host;
-	private int port;
-	
 	public AbstractRedisBuilderDB(Jedis jedis){
-		this.jedis = jedis;
+		super(jedis);
 	}
 	
 	public AbstractRedisBuilderDB(String redisHost, int redisPort) {
-		this.jedis = new Jedis(redisHost, redisPort);
-		this.host = redisHost;
-		this.port = redisPort;
-	}
-
-
-	@Override
-	public void reconnect() throws IOException {
-		this.jedis = new Jedis(host, port);
-		jedis.connect();
+		super(redisHost, redisPort);
 	}
 
 
 	protected PointContainer[] getPoints(String sessionId){
+		Jedis jedis = getJedis();
 		List<String> points = jedis.lrange("list:"+sessionId, 1, -1);
 		PointContainer[] ret = new PointContainer[points.size()];
 		int i = 0;
@@ -79,34 +69,44 @@ public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectab
 	}
 	
 	protected String getLineDetails(String sessionId){
-		return jedis.get(sessionId);
+		Jedis jedis = getJedis();
+		String ret = jedis.get(sessionId);
+		returnJedis(jedis);
+		return ret;
 	}
 	
 	protected void clearSession(String sessionId){
+		Jedis jedis = getJedis();
 		jedis.del(sessionId,"list:"+sessionId);
+		returnJedis(jedis);
 	}
 
 	
 	
 	@Override @Retrieable
 	public void addStation(String sessionID, Point point, long ts) {
+		Jedis jedis = getJedis();
 		String json = gson.toJson(new PointContainer().setTs(ts).setLat(point.getLatitude()).setLon(point.getLongitude()).setStation(true));
-		int ret = jedis.rpush("list:"+sessionID, json);
+		long ret = jedis.rpush("list:"+sessionID, json);
+		returnJedis(jedis);
 	}
 
 	@Override @Retrieable
 	public void createRecordingSession(String sessionID, String lane, String submap) {
+		Jedis jedis = getJedis();
 		jedis.setex(sessionID,60*60*12, submap+":"+lane);
 		jedis.rpush("list:"+sessionID, "");
 		//add expiration after redis 2.1.3
 		jedis.expire("list:"+sessionID, 60*60*24);
-	
+		returnJedis(jedis);
 	}
 
 	@Override @Retrieable
 	public void addPoint(String sessionID, Point point, long ts) {
+		Jedis jedis = getJedis();
 		String json = gson.toJson(new PointContainer().setTs(ts).setLat(point.getLatitude()).setLon(point.getLongitude()).setStation(false));
-		int ret = jedis.rpush("list:"+sessionID, json);
+		long ret = jedis.rpush("list:"+sessionID, json);
+		returnJedis(jedis);
 	}
 	
 

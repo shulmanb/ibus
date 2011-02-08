@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,20 +41,16 @@ public class TracerIntegTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	@Before
+	public void setUpBefore() throws Exception {
 		tracer = new Tracer();
 		sm = new SessionManager();
-		jedis = new Jedis("localhost", 6379);
+		jedis = new Jedis("localhost", 6379,1000000);
 		jedis.select(1);
+		jedis.flushDB();
 		ISessionDB sesDb = new RedisSessionDB(jedis);
 		sm.setSesDb(sesDb);
 		tracer.setSesDb(sesDb);
-	}
-
-	@Before
-	public void setUpTest() throws Exception {
-		jedis.flushDB();
 		ses = sm.createSession("testclient");
 	}
 
@@ -257,7 +254,7 @@ public class TracerIntegTest {
 			String lsStr = jedis.hget(ses + "status", "currls");
 			assertEquals(null, lsStr);
 
-			assertEquals(new Integer(1),jedis.llen(ses+"route"));
+			assertEquals(new Long(1),jedis.llen(ses+"route"));
 
 			String destStr = jedis.hget(ses, "destination");
 			Point dest = mapper.readValue(destStr, Point.class);
@@ -291,7 +288,7 @@ public class TracerIntegTest {
 			String lsStr = jedis.hget(ses + "status", "currls");
 			assertEquals(null, lsStr);
 
-			assertEquals(new Integer(2),jedis.llen(ses+"route"));
+			assertEquals(new Long(2),jedis.llen(ses+"route"));
 			
 			String nextLsStr = jedis.lindex(ses+"route",0);
 			assertEquals(mapper.readValue(nextLsStr, LineSegment.class), sr.getRoute().get(0));
@@ -349,7 +346,7 @@ public class TracerIntegTest {
 			tracer.storeTemporaryRoute(sr);
 			tracer.checkInToRoute(ses, sr.getRouteId());
 
-			assertEquals(new Integer(1),jedis.llen(ses+"route"));
+			assertEquals(new Long(1),jedis.llen(ses+"route"));
 
 			TimedPoint p = new TimedPoint(35.104279, 32.664129, 0);
 			tracer.storeLocationOnRoute(ses, p);
@@ -362,9 +359,9 @@ public class TracerIntegTest {
 			Stop st = mapper.readValue(firststop, Stop.class);
 			assertEquals(sr.getRoute().get(0).getEnd(), st);
 			
-			assertEquals(new Integer(0),jedis.llen(ses+"route"));
+			assertEquals(new Long(0),jedis.llen(ses+"route"));
 
-			assertEquals(new Integer(4), jedis.llen(ses+"segment"));
+			assertEquals(new Long(4), jedis.llen(ses+"segment"));
 		} catch (Exception e) {
 			fail("Exception Cought " + e.getMessage());
 		}
@@ -383,7 +380,7 @@ public class TracerIntegTest {
 			tracer.storeTemporaryRoute(sr);
 			tracer.checkInToRoute(ses, sr.getRouteId());
 
-			assertEquals(new Integer(1),jedis.llen(ses+"route"));
+			assertEquals(new Long(1),jedis.llen(ses+"route"));
 
 			TimedPoint p = new TimedPoint(35.104, 32.664, 0);
 			tracer.storeLocationOnRoute(ses, p);
@@ -396,9 +393,9 @@ public class TracerIntegTest {
 			Stop st = mapper.readValue(nextstop, Stop.class);
 			assertEquals(sr.getRoute().get(0).getStart(), st);
 			
-			assertEquals(new Integer(1),jedis.llen(ses+"route"));
+			assertEquals(new Long(1),jedis.llen(ses+"route"));
 
-			assertEquals(new Integer(0), jedis.llen(ses+"segment"));
+			assertEquals(new Long(0), jedis.llen(ses+"segment"));
 			
 			
 			TimedPoint p1 = new TimedPoint(35.104279, 32.664129, 100);
@@ -412,9 +409,9 @@ public class TracerIntegTest {
 			st = mapper.readValue(nextstop, Stop.class);
 			assertEquals(sr.getRoute().get(0).getEnd(), st);
 			
-			assertEquals(new Integer(0),jedis.llen(ses+"route"));
+			assertEquals(new Long(0),jedis.llen(ses+"route"));
 
-			assertEquals(new Integer(4), jedis.llen(ses+"segment"));
+			assertEquals(new Long(4), jedis.llen(ses+"segment"));
 		} catch (Exception e) {
 			fail("Exception Cought " + e.getMessage());
 		}
@@ -447,7 +444,7 @@ public class TracerIntegTest {
 			Stop st = mapper.readValue(firststop, Stop.class);
 			assertEquals(sr.getRoute().get(0).getEnd(), st);
 
-			assertEquals(new Integer(4), jedis.llen(ses+"segment"));
+			assertEquals(new Long(4), jedis.llen(ses+"segment"));
 		} catch (Exception e) {
 			fail("Exception Cought " + e.getMessage());
 		}
@@ -480,7 +477,7 @@ public class TracerIntegTest {
 			Stop st = mapper.readValue(firststop, Stop.class);
 			assertEquals(sr.getRoute().get(0).getEnd(), st);
 
-			assertEquals(new Integer(3), jedis.llen(ses+"segment"));
+			assertEquals(new Long(3), jedis.llen(ses+"segment"));
 		} catch (Exception e) {
 			fail("Exception Cought " + e.getMessage());
 		}
@@ -510,7 +507,7 @@ public class TracerIntegTest {
 			Stop st = mapper.readValue(firststop, Stop.class);
 			assertEquals(sr.getRoute().get(1).getEnd(), st);
 
-			assertEquals(new Integer(4), jedis.llen(ses+"segment"));
+			assertEquals(new Long(4), jedis.llen(ses+"segment"));
 		} catch (Exception e) {
 			fail("Exception Cought " + e.getMessage());
 		}
@@ -543,7 +540,7 @@ public class TracerIntegTest {
 
 			String firststop = jedis.hget(ses + "status", "nextstop");
 			assertNotNull(firststop);
-			assertEquals(new Integer(0), jedis.llen(ses+"segment"));
+			assertEquals(new Long(0), jedis.llen(ses+"segment"));
 		} catch (Exception e) {
 			fail("Exception Cought " + e.getMessage());
 		}
@@ -577,7 +574,7 @@ public class TracerIntegTest {
 
 			String firststop = jedis.hget(ses + "status", "nextstop");
 			assertNotNull(firststop);
-			assertEquals(new Integer(0), jedis.llen(ses+"segment"));
+			assertEquals(new Long(0), jedis.llen(ses+"segment"));
 			
 			TimedPoint p4 = new TimedPoint(35.104, 32.66405, 10);
 			tracer.storeLocationOnRoute(ses, p4);

@@ -2,6 +2,7 @@ IbusGateway::Application.routes.draw do
   #map builder
   match '/lines' => "mapbuilder#initiate" ,:via => :post
   match '/lines/:id/point' =>"mapbuilder#addpoint" ,:via => :post
+  match '/lines/:id/points' =>"mapbuilder#addpoints" ,:via => :post
   match '/lines/:id/station' => "mapbuilder#addstation" ,:via => :post
   match '/lines/:id/laststation' => "mapbuilder#complete" ,:via => :post
   
