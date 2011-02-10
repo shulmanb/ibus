@@ -227,7 +227,7 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		int indx = 0;
 		BatchPutAttributesRequest batch = new BatchPutAttributesRequest();
 		batch.setDomainName(SEGMENT_POINTS);
-		List<ReplaceableItem> segmentsPoints = new LinkedList<ReplaceableItem>();
+		List<List<ReplaceableItem>> segmentsPoints = new LinkedList<List<ReplaceableItem>>();
 		for(LineSegment segment:segments){
 			List<ReplaceableAttribute> points = new LinkedList<ReplaceableAttribute>();
 			ArrayList<TimedPoint> route = segment.getPoints();
@@ -235,8 +235,14 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 			for(TimedPoint p:route){
 				points.add(new ReplaceableAttribute(String.valueOf(i), gson.toJson(p,TimedPoint.class), true));
 				i++;
+				if(points.size() == 255){
+					//SimpleDB allows maximum 256 attributes in a batch, divide points for batches of 255
+					addPointsToBatch(lineId, indx, segmentsPoints, points);
+				}
 			}
-			segmentsPoints.add(new ReplaceableItem(lineId+"_"+indx, points));
+			if(points.size() > 0){
+				addPointsToBatch(lineId, indx, segmentsPoints, points);
+			}
 			//not serializing the points
 			segment.setPoints(null);
 			ReplaceableAttribute attr = new ReplaceableAttribute(String.valueOf(indx),gson.toJson(segment),true);
@@ -244,10 +250,22 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 			segment.setPoints(route);
 			indx++;
 		}
-		batch.setItems(segmentsPoints);
+		if(!segmentsPoints.isEmpty()){
+			for(List<ReplaceableItem> pBatch:segmentsPoints){
+				batch.setItems(pBatch);
+				sdb.batchPutAttributes(batch);
+			}
+		}
 		putAttributesRequest.setAttributes(attributes);
 		sdb.putAttributes(putAttributesRequest);
-		sdb.batchPutAttributes(batch);
+	}
+
+	private void addPointsToBatch(String lineId, int indx,
+			List<List<ReplaceableItem>> segmentsPoints,
+			List<ReplaceableAttribute> points) {
+		List<ReplaceableItem> batchOfPOints = new LinkedList<ReplaceableItem>();
+		batchOfPOints.add(new ReplaceableItem(lineId+"_"+indx, points));
+		segmentsPoints.add(batchOfPOints);
 	}
 
 	/**

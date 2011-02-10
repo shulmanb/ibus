@@ -4,17 +4,17 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>com.ibus</groupId>
-		<version>0.0.3-SNAPSHOT</version>
+		<version>0.0.4-SNAPSHOT</version>
 	</parent>
 	<groupId>com.ibus</groupId>
 	<artifactId>mapbuilder</artifactId>
 	<name>mapbuilder</name>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<dependencies>
 		<dependency>
 			<groupId>com.ibus</groupId>
 			<artifactId>common</artifactId>
-			<version>0.0.3-SNAPSHOT</version>
+			<version>0.0.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
