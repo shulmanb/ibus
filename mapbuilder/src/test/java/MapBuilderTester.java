@@ -9,9 +9,9 @@ import com.ibus.map.Point;
 import com.ibus.mapbuilder.Mapbuilder;
 import com.ibus.mapbuilder.db.SimpleDBRedisBuilderDB;
 import com.ibus.mapbuilder.module.MapbuilderModule;
-//@Ignore
+//
 public class MapBuilderTester {
-	@Test
+	@Test @Ignore
 	public void testMapBuilder() {
 		// Jedis jedis = new Jedis("localhost", 6379);
 		// jedis.set("key", "value");
