@@ -141,4 +141,40 @@ public class MapBuilderTest {
 
 	}
 
+	@Test
+	public void testFinishRouteRecording_BaTches() {
+		//mock jedis.get session details
+		when(jedis.get("ses")).thenReturn("yoqneam:1");
+		//mock retrieve points
+		final List<String> lst = new LinkedList<String>(); 
+		lst.add("{\"lat\":0.0,\"lon\":0.0,\"ts\":0,\"isStation\":true}");
+		for(int i = 0;i<500;i++){
+			lst.add("{\"lat\":1.0"+i+",\"lon\":1.0"+i+",\"ts\":1,\"isStation\":false}");
+		}
+		lst.add("{\"lat\":2.0,\"lon\":2.0,\"ts\":2,\"isStation\":true}");
+		when(jedis.lrange("list:ses",1, -1)).thenReturn(lst);
+		
+		//mock call to simple db
+		when(sdb.getAttributes(any(GetAttributesRequest.class))).
+			thenReturn(new GetAttributesResult());
+		
+		mb.finishRouteRecording("ses", 2,new Point(2,2));
+
+		verify(jedis).rpush("list:ses", "{\"lat\":2.0,\"lon\":2.0,\"ts\":2,\"isStation\":true}");
+		verify(jedis).get("ses");
+		verify(jedis).lrange("list:ses",1, -1);
+		verify(jedis).del("ses","list:ses");
+
+		ArgumentCaptor<PutAttributesRequest> putAttributes = ArgumentCaptor.forClass(PutAttributesRequest.class);
+		ArgumentCaptor<BatchPutAttributesRequest> batchPutAttributes = ArgumentCaptor.forClass(BatchPutAttributesRequest.class);
+		
+		verify(sdb,times(1)).getAttributes(any(GetAttributesRequest.class));
+		verify(sdb,times(3)).putAttributes(putAttributes.capture());
+		verify(sdb, times(3)).batchPutAttributes(batchPutAttributes.capture());
+		verifyNoMoreInteractions(jedis, sdb);
+		
+
+	}
+
+
 }
