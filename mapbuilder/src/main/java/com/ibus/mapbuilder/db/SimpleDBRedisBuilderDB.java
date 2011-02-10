@@ -266,6 +266,7 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		List<ReplaceableItem> batchOfPOints = new LinkedList<ReplaceableItem>();
 		batchOfPOints.add(new ReplaceableItem(lineId+"_"+indx, points));
 		segmentsPoints.add(batchOfPOints);
+		points.clear();
 	}
 
 	/**
