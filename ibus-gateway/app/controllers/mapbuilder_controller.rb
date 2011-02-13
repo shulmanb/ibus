@@ -44,6 +44,19 @@ class MapbuilderController < ApplicationController
     format_empty :ok
   end
 
+  def addpoints
+    points = params[:data]
+    id = params[:id]
+    points.each do |p|
+      lat = p[:lat].gsub("_",".")
+      long = p[:long].gsub("_",".")
+      ts = p[:ts]
+      @@wrapper.addPoint(id,ts,lat,long)  
+    end    
+    format_empty :ok
+  end
+
+  
   def addstation
     lat = params[:data][:lat].gsub("_",".")
     long = params[:data][:long].gsub("_",".")

@@ -10,7 +10,7 @@ import com.amazonaws.services.simpledb.model.GetAttributesRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesResult;
 import com.amazonaws.services.simpledb.model.Item;
 import com.amazonaws.services.simpledb.model.SelectRequest;
-@Ignore
+
 public class SimpleDBRafiExtractor {
 	public static void main(String[] args) {
 		 AmazonSimpleDB sdb = new AmazonSimpleDBClient(new BasicAWSCredentials("AKIAIZANS6EFPJLXDW3Q", "WmZ9RYrSgQ5ORxvN8AAZP29JdtA26QU59w7gZExI"));

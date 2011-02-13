@@ -39,7 +39,7 @@ public class SessionManagerTest {
 	@Test
 	public void testCreateSessionClientExists() {
 		when(jedis.get("client")).thenReturn("ses");
-		when(jedis.exists("ses")).thenReturn(1);
+		when(jedis.exists("ses")).thenReturn(true);
 		when(jedis.hget("ses","client")).thenReturn("client");
 		String ses = sm.createSession("client");
 		assertEquals("ses", ses);
@@ -66,7 +66,7 @@ public class SessionManagerTest {
 
 	@Test
 	public void testValidateSessionNotExists() {
-		when(jedis.exists("ses")).thenReturn(0);
+		when(jedis.exists("ses")).thenReturn(false);
 		Boolean res = sm.validateSession("ses");
 		assertFalse(res);
 		verify(jedis).exists("ses");
@@ -75,7 +75,7 @@ public class SessionManagerTest {
 
 	@Test
 	public void testValidateSessionExists() {
-		when(jedis.exists("ses")).thenReturn(1);
+		when(jedis.exists("ses")).thenReturn(true);
 		when(jedis.hget("ses","client")).thenReturn("client");
 		Boolean res = sm.validateSession("ses");
 		assertTrue(res);

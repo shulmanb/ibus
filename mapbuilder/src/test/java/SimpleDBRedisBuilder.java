@@ -6,9 +6,8 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.ibus.map.Point;
 import com.ibus.mapbuilder.db.SimpleDBRedisBuilderDB;
-//@Ignore
 public class SimpleDBRedisBuilder {
-	@Test
+	@Test@Ignore
 	public void test() {
 		// Jedis jedis = new Jedis("localhost", 6379);
 		// jedis.set("key", "value");

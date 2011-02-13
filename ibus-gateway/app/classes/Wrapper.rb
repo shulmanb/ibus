@@ -7,15 +7,16 @@ require 'lib/aws-java-sdk-1.1.0.jar'
 require 'lib/commons-codec-1.3.jar'
 require 'lib/commons-httpclient-3.1.jar'
 require 'lib/commons-logging-1.1.1.jar'
+require 'lib/commons-pool-1.5.5.jar'
 require 'lib/gson-1.5.jar'
 require 'lib/jackson-core-asl-1.6.2.jar'
 require 'lib/jackson-mapper-asl-1.6.2.jar'
-require 'lib/jedis-1.3.1.jar'
+require 'lib/jedis-1.5.2.jar'
 require 'lib/stax-api-1.0.1.jar'
-require 'lib/tracer-0.0.3-SNAPSHOT.jar'
-require 'lib/common-0.0.3-SNAPSHOT.jar'
-require 'lib/mapbuilder-0.0.3-SNAPSHOT.jar'
-require 'lib/navigation-0.0.3-SNAPSHOT.jar'
+require 'lib/tracer-0.0.4-SNAPSHOT.jar'
+require 'lib/common-0.0.4-SNAPSHOT.jar'
+require 'lib/mapbuilder-0.0.4-SNAPSHOT.jar'
+require 'lib/navigation-0.0.4-SNAPSHOT.jar'
 require 'lib/guava-r07.jar'
 require 'lib/aopalliance-1.0.jar'
 require 'lib/guice-2.0.jar'
@@ -27,6 +28,8 @@ import com.ibus.map.StopsRoute
 import com.ibus.map.LineSegment
 import com.ibus.map.AreaDetails
 import com.ibus.map.LineDetails
+import com.ibus.map.Lines
+import com.ibus.map.Line
 import com.ibus.map.StopDetails
 import com.ibus.tracer.Status
 
@@ -38,6 +41,24 @@ import com.ibus.tracer.SessionManager
 import com.ibus.tracer.module.TracerModule
 import com.ibus.navigation.module.NavigationModule
 import com.ibus.mapbuilder.module.MapbuilderModule
+
+
+class Line
+  include ActiveModel::Serializers::JSON
+  include ActiveModel::Serializers::Xml
+  def attributes
+    @attributes ||= {'id'=>nil,'name'=>nil}
+  end
+end
+
+class Lines
+  include ActiveModel::Serializers::JSON
+  include ActiveModel::Serializers::Xml
+  def attributes
+    @attributes ||= {'lines'=>[]}
+  end
+end
+
 
 class Status
   include ActiveModel::Serializers::JSON
@@ -204,6 +225,15 @@ class Wrapper
     @query.getAreaDetails Point.new(centerlon.to_f,centerlat.to_f),latoffset.to_i,lonoffset.to_i
   end
 
+  def getLinesInSubmap(submap)
+    @query.getLinesInSubmap submap
+  end
+
+  def deleteLine(lineId)
+    @query.deleteLine lineId
+  end
+
+  
   def navigate(origlat,origlon, destlat, destlon,submap)
     stops_route = @navigator.navigate Point.new(origlon.to_f,origlat.to_f),Point.new(destlon.to_f,destlat.to_f),submap
     if stops_route != nil

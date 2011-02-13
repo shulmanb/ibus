@@ -11,7 +11,9 @@ import java.util.TreeSet;
 
 import com.google.inject.Inject;
 import com.ibus.map.AreaDetails;
+import com.ibus.map.Line;
 import com.ibus.map.LineDetails;
+import com.ibus.map.Lines;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopDetails;
@@ -136,5 +138,17 @@ public class MapQuery implements IMapQuery {
 		Point left = MapUtils.calculateLeftCorner(center, latoffset, lonoffset);
 		Point right = MapUtils.calculateRightCorner(center, latoffset, lonoffset);
 		return getAreaDetails(left, right);
+	}
+	
+	@Override
+	public void deleteLine(String lineId){
+		db.deleteLineById(lineId);
+	}
+	
+	@Override
+	public Lines getLinesInSubmap(String submap){
+		Lines ret = new Lines();
+		ret.setLines(db.getLinesInSubmap(submap));
+		return ret;
 	}
 }

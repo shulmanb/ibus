@@ -8,11 +8,14 @@ import java.util.Map;
 
 import org.omg.CosNaming.IstringHelper;
 
+
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
+import com.ibus.connectivity.AbstractRedisStorage;
 import com.ibus.connectivity.IReconnectable;
 import com.ibus.connectivity.Retrieable;
 import com.ibus.map.Point;
@@ -23,7 +26,7 @@ import com.ibus.map.SubmapIdGenerator;
  * @author Home
  *
  */
-public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectable {
+public abstract class AbstractRedisBuilderDB extends AbstractRedisStorage implements IBuilderDB {
 
 	public static class PointContainer{
 		double lat;
@@ -85,30 +88,18 @@ public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectab
 			return this;
 		}
 	}
-	private Jedis jedis;
 	protected Gson gson = new Gson();
-	private String host;
-	private int port;
-	
 	public AbstractRedisBuilderDB(Jedis jedis){
-		this.jedis = jedis;
+		super(jedis);
 	}
 	
 	public AbstractRedisBuilderDB(String redisHost, int redisPort) {
-		this.jedis = new Jedis(redisHost, redisPort);
-		this.host = redisHost;
-		this.port = redisPort;
-	}
-
-
-	@Override
-	public void reconnect() throws IOException {
-		this.jedis = new Jedis(host, port);
-		jedis.connect();
+		super(redisHost, redisPort);
 	}
 
 
 	protected Multimap<String,List<PointContainer>> getPoints(String sessionId){
+		Jedis jedis = getJedis();
 		List<String> points = jedis.lrange("list:"+sessionId, 1, -1);
 		RegionDetails rdetails = getSessionRegion(sessionId);
 		SubmapIdGenerator idGen = new SubmapIdGenerator(rdetails.getNorthwest(), rdetails.getSoutheast(), rdetails.getLength(), rdetails.getRegionId());
@@ -134,44 +125,58 @@ public abstract class AbstractRedisBuilderDB implements IBuilderDB, IReconnectab
 	}
 	
 	protected String getLineDetails(String sessionId){
-		return jedis.hget(sessionId,"line");
+		Jedis jedis = getJedis();
+		String ret = jedis.hget(sessionId,"line");
+		returnJedis(jedis);
+		return ret;
 	}
 	
 	protected RegionDetails getSessionRegion(String sessionId){
+		Jedis jedis = getJedis();
 		String str = jedis.hget(sessionId,"region");
-		return gson.fromJson(str, RegionDetails.class);
+		RegionDetails ret =  gson.fromJson(str, RegionDetails.class);
+		returnJedis(jedis);
+		return ret;
 	}
 	
 	
 	protected void clearSession(String sessionId){
+		Jedis jedis = getJedis();
 		jedis.del(sessionId,"list:"+sessionId);
+		returnJedis(jedis);
 	}
 
 	
 	
 	@Override @Retrieable
 	public void addStation(String sessionID, Point point, long ts) {
+		Jedis jedis = getJedis();
 		String json = gson.toJson(new PointContainer().setTs(ts).setLat(point.getLatitude()).setLon(point.getLongitude()).setStation(true));
-		int ret = jedis.rpush("list:"+sessionID, json);
+		long ret = jedis.rpush("list:"+sessionID, json);
+		returnJedis(jedis);
 	}
 
 	@Override @Retrieable
 	public void createRecordingSession(String sessionID, String line, String submap) {
 		RegionDetails region = getRegionDetails(submap);
+		Jedis jedis = getJedis();
 		jedis.hset(sessionID,"line",line);
 		jedis.hset(sessionID,"region",this.gson.toJson(region));
 		jedis.rpush("list:"+sessionID, "");
 		//add expiration after redis 2.1.3
 		jedis.expire(sessionID, 60*60*12);
 		jedis.expire("list:"+sessionID, 60*60*12);
+		returnJedis(jedis);
 	}
 
 	protected abstract RegionDetails getRegionDetails(String submap);
 
 	@Override @Retrieable
 	public void addPoint(String sessionID, Point point, long ts) {
+		Jedis jedis = getJedis();
 		String json = gson.toJson(new PointContainer().setTs(ts).setLat(point.getLatitude()).setLon(point.getLongitude()).setStation(false));
-		int ret = jedis.rpush("list:"+sessionID, json);
+		long ret = jedis.rpush("list:"+sessionID, json);
+		returnJedis(jedis);
 	}
 	
 

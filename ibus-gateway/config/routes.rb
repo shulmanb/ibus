@@ -2,6 +2,7 @@ IbusGateway::Application.routes.draw do
   #map builder
   match '/lines' => "mapbuilder#initiate" ,:via => :post
   match '/lines/:id/point' =>"mapbuilder#addpoint" ,:via => :post
+  match '/lines/:id/points' =>"mapbuilder#addpoints" ,:via => :post
   match '/lines/:id/station' => "mapbuilder#addstation" ,:via => :post
   match '/lines/:id/laststation' => "mapbuilder#complete" ,:via => :post
   
@@ -21,6 +22,11 @@ IbusGateway::Application.routes.draw do
   match '/lines/:id' => "map#line_details", :via => :get
   match '/:ses/lines/:id' => "map#line_details", :via => :get
     
+  match '/lines/:id' => "map#delete_line", :via => :delete
+  match '/:ses/lines/:id' => "map#delete_line", :via => :delete
+  match '/submap/:id/lines' => "map#lines_in_submap", :via => :get
+  match '/:ses/submap/:id/lines' => "map#lines_in_submap", :via => :get
+  
   match '/stations/:id/lines'=>"map#lines_for_station", :via => :get
   match '/stations/:id'=>"map#station_details", :via => :get
   match '/:ses/stations/:id/lines'=>"map#lines_for_station", :via => :get

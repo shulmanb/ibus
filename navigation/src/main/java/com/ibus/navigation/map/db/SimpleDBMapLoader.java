@@ -54,6 +54,18 @@ public class SimpleDBMapLoader implements IMapDBLoader {
 				secretKey));
 	}
 
+	private List<Item> getAllItems(String query) {
+		SelectRequest selectRequest = new SelectRequest(query);
+		SelectResult res = sdb.select(selectRequest);
+		List<Item> items = res.getItems();
+		while(res.getNextToken()!=null && !res.getNextToken().isEmpty()){
+			selectRequest.setNextToken(res.getNextToken());
+			res = sdb.select(selectRequest);
+			items.addAll(res.getItems());
+		}
+		return items;
+	}
+
 	private Stop toStop(List<Attribute> list, int index) {
 		Stop stop = new Stop();
 		for (Attribute attr : list) {
@@ -164,13 +176,12 @@ public class SimpleDBMapLoader implements IMapDBLoader {
 	@Override
 	public Stop[] getStops(String submap) {
 		//stops ordered by stopid (lat long)
-		SelectRequest selectRequest = new SelectRequest("select * from "+STATIONS_DETAILS+" where "+SUBMAP_ATTR+" = '"+submap+"' intersection itemName() is not null order by itemName() ASC");
-		
-		SelectResult res = sdb.select(selectRequest);
-		Stop[] stations = new Stop[res.getItems().size()];
+		String query = "select * from "+STATIONS_DETAILS+" where "+SUBMAP_ATTR+" = '"+submap+"' intersection itemName() is not null order by itemName() ASC";
+		List<Item> items = getAllItems(query);
+		Stop[] stations = new Stop[items.size()];
 		int i = 0;
 		int index = 0;
-		for(Item itm:res.getItems()){
+		for(Item itm:items){
 			stations[i] = toStop(itm.getAttributes(), index);
 			index+=stations[i].getNodes().size();
 			i++;
@@ -182,11 +193,11 @@ public class SimpleDBMapLoader implements IMapDBLoader {
 	 * Retrieves just the segments (stops without nodes)
 	 */
 	public LineSegment[] getLineSegments(String submap) {
-		SelectRequest selectRequest = new SelectRequest("select * from "+LINE_SEGMENTS+" where "+SUBMAP_ATTR+" = '"+submap+"'");
-		SelectResult res = sdb.select(selectRequest);
+		String query = "select * from "+LINE_SEGMENTS+" where "+SUBMAP_ATTR+" = '"+submap+"'"; 
+		List<Item> items = getAllItems(query);
 		ArrayList<LineSegment> segments = new ArrayList<LineSegment>();
 		LinkedList<Future<LineSegment>> fList = new LinkedList<Future<LineSegment>>();
-		for(Item itm:res.getItems()){
+		for(Item itm:items){
 			for(final Attribute attr:itm.getAttributes()){
 				if(attr.getName().equalsIgnoreCase(LINE_NAME_ATTR) ||
 				   attr.getName().equalsIgnoreCase(SUBMAP_ATTR)){
@@ -200,9 +211,8 @@ public class SimpleDBMapLoader implements IMapDBLoader {
 						//query for the segment points
 						String query = 	"select * from "+SEGMENT_POINTS+" where itemName() = '"
 							+ls.getLineId()+"_"+attr.getName()+ "' order by itemName() Asc";
-						final SelectRequest pointsSelectRequest = new SelectRequest(query);
-						SelectResult pointsres = sdb.select(pointsSelectRequest);
-						for (Item pointsitm : pointsres.getItems()) {
+						List<Item> items = getAllItems(query);
+						for (Item pointsitm : items) {
 							TimedPoint[] tmp = new TimedPoint[pointsitm.getAttributes().size()];
 							for (Attribute p : pointsitm.getAttributes()) {
 								int indx = Integer.valueOf(p.getName());

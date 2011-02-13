@@ -35,8 +35,8 @@ public class SessionManagerIntegTest {
 	public void testCreateSession_Anonimous(){
 		String ses = sm.createSession("test");
 		String ret = jedis.hget(ses, "client");
-		assertEquals(new Integer(1), jedis.exists(ses));
-		assertEquals(new Integer(1), jedis.hexists(ses,"client"));
+		assertEquals(true, jedis.exists(ses));
+		assertEquals(true, jedis.hexists(ses,"client"));
 		assertEquals("test", ret);
 	}
 
@@ -44,8 +44,8 @@ public class SessionManagerIntegTest {
 	public void testCreateSession(){
 		String ses = sm.createSession("test","");
 		String ret = jedis.hget(ses, "client");
-		assertEquals(new Integer(1), jedis.exists(ses));
-		assertEquals(new Integer(1), jedis.hexists(ses,"client"));
+		assertEquals(true, jedis.exists(ses));
+		assertEquals(true, jedis.hexists(ses,"client"));
 		assertEquals("test", ret);
 	}
 	

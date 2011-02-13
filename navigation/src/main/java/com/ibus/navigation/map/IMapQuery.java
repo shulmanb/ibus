@@ -1,6 +1,7 @@
 package com.ibus.navigation.map;
 
 import com.ibus.map.AreaDetails;
+import com.ibus.map.Lines;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopDetails;
@@ -19,5 +20,7 @@ public interface IMapQuery {
 	public Stop[] getLineStationsInArea(String lineId,Point center, int latoffset, int lonoffset);
 	public AreaDetails getAreaDetails(Point left, Point right);
 	public AreaDetails getAreaDetails(Point center, int latoffset, int lonoffset);
+	void deleteLine(String lineId);
+	Lines getLinesInSubmap(String submap);
 	
 }

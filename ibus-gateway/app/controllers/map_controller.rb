@@ -156,4 +156,16 @@ class MapController < ApplicationController
     format @details  
   end
 
+  def lines_in_submap
+    submap = params[:id]
+    @lines = @@wrapper.getLinesInSubmap submap
+    format @lines  
+  end
+  
+  def delete_line
+    lineid = params[:id]
+    @@wrapper.deleteLine lineid
+    format_empty :ok  
+  end
+  
 end

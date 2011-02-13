@@ -14,7 +14,7 @@ public class RetryRedisOperation implements MethodInterceptor {
 		for(int i = 0;i < 3;i++){
 			try{
 				return invocation.proceed();	
-			}catch(redis.clients.jedis.JedisException e){
+			}catch(redis.clients.jedis.exceptions.JedisException e){
 				ex = e;
 				try {
 					Object target = invocation.getThis();

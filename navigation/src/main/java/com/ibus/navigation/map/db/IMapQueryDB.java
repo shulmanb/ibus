@@ -1,5 +1,6 @@
 package com.ibus.navigation.map.db;
 
+import com.ibus.map.Line;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopDetails;
@@ -39,6 +40,10 @@ public interface IMapQueryDB {
 	StopDetails[] getStationsInArea(String submap, Point left, Point right);
 
 	StopDetails[] getStationsInArea(Point left, Point right);
+
+	void deleteLineById(String lineId);
+
+	Line[] getLinesInSubmap(String submap);
 
 
 }

@@ -12,7 +12,6 @@ import redis.clients.jedis.Jedis;
 
 import com.ibus.tracer.db.ISessionDB;
 import com.ibus.tracer.db.RedisSessionDB;
-@Ignore
 public class TracerTest {
 
 	private Jedis jedis;
@@ -25,32 +24,32 @@ public class TracerTest {
 		tr.setSesDb(sesDb);
 	}
 
-	@Test
+	@Test @Ignore
 	public void testStoreLocation() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testCheckInToRoute() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testStoreLocationOnRoute() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testGetLocation() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testGetCheckInStatus() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testStoreTemporaryRoute() {
 		fail("Not yet implemented");
 	}
