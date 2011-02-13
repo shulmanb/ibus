@@ -29,11 +29,11 @@ public class Mapbuilder implements IMapBuilder{
 	}
 	
 	@Override
-	public String initiateRouteRecording(long ts, Point point, String lineName, String submap) {
+	public String initiateRouteRecording(long ts, Point point, String lineName, String region) {
 		//generate session key
 		String sessionID = UUID.randomUUID().toString();
 		//start session in  redis
-		db.createRecordingSession(sessionID,lineName, submap);
+		db.createRecordingSession(sessionID,lineName, region);
 		//add starting point and ts
 		db.addStation(sessionID, point, ts);
 		return sessionID;

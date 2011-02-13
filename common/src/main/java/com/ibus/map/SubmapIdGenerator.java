@@ -1,6 +1,5 @@
-package com.ibus.mapbuilder;
+package com.ibus.map;
 
-import com.ibus.map.Point;
 import com.ibus.map.utils.MapUtils;
 
 public class SubmapIdGenerator {
@@ -39,6 +38,9 @@ public class SubmapIdGenerator {
 	}
 	
 	public String getSubmapIdForPoint(Point p){
+		//TODO: check if point in the region
+		
+		
 		//the region is divided into squares, the squares are numbered starting from 1: 
 		//from west to east, from north to south
 		//we should find the square where the point fits

@@ -3,8 +3,7 @@ package com.ibus.map;
 public class StopDetails extends Stop {
 
 	private String[] lines;
-	private String[] linesNames
-	;
+	private String[] linesNames;
 	private String submap;
 
 	public StopDetails(){}

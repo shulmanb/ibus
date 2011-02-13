@@ -22,18 +22,25 @@ public class Stop extends Point{
 	 * The stops description 
 	 */
 	protected String desc = null;
+
+	private boolean isForeign;
 	
 	public Stop(){
 		nodes = new HashMap<String,Node>();
+		this.isForeign = false;
 	}
 	
 	public Stop(String desc, Point p){
 		this(p.round());
 		this.desc = desc;
+		this.isForeign = false;
 		nodes = new HashMap<String,Node>();
 	}
 
-	
+	public Stop(String desc, Point p, boolean isForeign){
+		this(desc,p);
+		this.isForeign = isForeign;
+	}
 	public String getDesc() {
 		return desc;
 	}

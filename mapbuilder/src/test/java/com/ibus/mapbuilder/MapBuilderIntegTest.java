@@ -32,7 +32,7 @@ public class MapBuilderIntegTest {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test @Ignore
 	public void testFinishRouteRecording() {
 		fail("Not yet implemented");
 	}

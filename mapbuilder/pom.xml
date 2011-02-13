@@ -4,17 +4,18 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>com.ibus</groupId>
-		<version>0.0.3-SNAPSHOT</version>
+		<version>0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>com.ibus</groupId>
 	<artifactId>mapbuilder</artifactId>
 	<name>mapbuilder</name>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<dependencies>
+		
 		<dependency>
 			<groupId>com.ibus</groupId>
 			<artifactId>common</artifactId>
-			<version>0.0.3-SNAPSHOT</version>
+			<version>0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -56,6 +57,11 @@
 			<artifactId>mockito-all</artifactId>
 			<version>1.8.5</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>r07</version>
 		</dependency>
 		
 	</dependencies>

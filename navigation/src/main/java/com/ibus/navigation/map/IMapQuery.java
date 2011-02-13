@@ -7,8 +7,8 @@ import com.ibus.map.StopDetails;
 
 public interface IMapQuery {
 	
-	public StopDetails[] getStopsInArea(String submap,Point left, Point right);
-	public StopDetails[] getStopsInArea(String submap,Point center, int latoffset, int lonoffset);
+	public StopDetails[] getStopsInArea(String region,Point left, Point right);
+	public StopDetails[] getStopsInArea(String region,Point center, int latoffset, int lonoffset);
 	public Point[] getLineDetails(String lineId, int level);
 	public Stop[] getLineStations(String lineId);
 	public String[] getLinesForStation(String stationid);

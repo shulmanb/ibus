@@ -5,12 +5,12 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>com.ibus</groupId>
-		<version>0.0.3-SNAPSHOT</version>
+		<version>0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>com.ibus</groupId>
 	<artifactId>tracer</artifactId>
 	<name>tracer</name>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>com.ibus</groupId>
 			<artifactId>common</artifactId>
-			<version>0.0.3-SNAPSHOT</version>
+			<version>0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>

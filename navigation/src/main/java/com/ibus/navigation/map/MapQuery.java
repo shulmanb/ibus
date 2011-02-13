@@ -35,16 +35,16 @@ public class MapQuery implements IMapQuery {
 	}
 
 	@Override
-	public StopDetails[] getStopsInArea(String submap,Point left, Point right) {
-		StopDetails stops[] = db.getStationsInArea(submap,left,right);
+	public StopDetails[] getStopsInArea(String region,Point left, Point right) {
+		StopDetails stops[] = db.getStationsInArea(region,left,right);
 		return stops;
 	}
 
 	@Override
-	public StopDetails[] getStopsInArea(String submap,Point center, int latoffset, int lonoffset) {
+	public StopDetails[] getStopsInArea(String region,Point center, int latoffset, int lonoffset) {
 		Point left = MapUtils.calculateLeftCorner(center, latoffset, lonoffset);
 		Point right = MapUtils.calculateRightCorner(center, latoffset, lonoffset);
-		StopDetails[] stops = db.getStationsInArea(submap,left,right);
+		StopDetails[] stops = db.getStationsInArea(region,left,right);
 		return stops;
 	}
 

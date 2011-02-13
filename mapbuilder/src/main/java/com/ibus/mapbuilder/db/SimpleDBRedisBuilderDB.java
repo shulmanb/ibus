@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import redis.clients.jedis.Jedis;
@@ -23,6 +24,7 @@ import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.ReplaceableItem;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.google.common.collect.Multimap;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -51,24 +53,6 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		super(redisHost, redisPort);
 		sdb = new AmazonSimpleDBClient(new BasicAWSCredentials(userKey,
 				secretKey));
-	}
-
-	@Override
-	public void flushRoute(String sessionID) {
-		String details = getLineDetails(sessionID);
-		StringTokenizer tkn = new StringTokenizer(details, ":");
-		String submap = tkn.nextToken();
-		String lineName = tkn.nextToken();
-		PointContainer[] points = getPoints(sessionID);
-		List<LineSegment> segments = new ArrayList<LineSegment>();
-		ArrayList<Stop> stations = new ArrayList<Stop>();
-		ArrayList<Point> linePoints = new ArrayList<Point>();
-		
-		createDataStructures(lineName,sessionID, submap, points, segments, stations,linePoints);
-		
-		store(lineName, sessionID,submap, segments, stations, linePoints);
-		
-		clearSession(sessionID);
 	}
 
 	private void store(String lineName,String lineId, String submap, List<LineSegment> segments, ArrayList<Stop> stations, ArrayList<Point> linePoints) {
@@ -151,10 +135,14 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 			Collection<ReplaceableItem> items, List<Stop> stationsToAlter) {
 		if(!stationsToAlter.isEmpty()){
 			StringBuilder sb = new StringBuilder("select * from "+STATIONS_DETAILS+" where ");
-			for(Stop st:stationsToAlter){
-				sb.append("itemName=\""+st.getId()+"\",");
+			boolean first = true;
+			for (Stop st : stationsToAlter) {
+				if (!first) {
+					sb.append(" or ");
+				}
+				sb.append("itemName=\"" + st.getId() + "\"");
+				first = false;
 			}
-			sb.deleteCharAt(sb.lastIndexOf(","));
 			SelectRequest sr = new SelectRequest(sb.toString());
 			SelectResult res = sdb.select(sr);
 			List<Item> existing = res.getItems();
@@ -237,7 +225,7 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 	 * @param stations data structure for created stations
 	 * @param linePoints data structure for created line points
 	 */
-	private void createDataStructures(String lineName,String lineId, String submap, PointContainer[] points, 
+	private void createDataStructures(String lineName,String lineId, String submap, List<PointContainer> points, 
 									  List<LineSegment> segments,ArrayList<Stop> stations,ArrayList<Point> linePoints) {
 		// iterate over points, create line segments
 		// each segment is bounded by two stations and contains all the points
@@ -247,15 +235,14 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		ArrayList<TimedPoint> segmentPoints  = new ArrayList<TimedPoint>(); 
 		Stop startStop = null;
 		int stopid = 0;
-		long basets = points[0].ts;  
+		long basets = points.get(0).ts;  
 		for (PointContainer container : points) {
 			TimedPoint tp = new TimedPoint(container.lon, container.lat,container.ts-basets);
 			linePoints.add(tp.toPoint());
 			segmentPoints.add(tp);
 			if (container.isStation) {
 				stopid++;
-				Stop st = new Stop(new Point(container.lon, container.lat));
-				st.setDesc(container.desc);
+				Stop st = new Stop(container.desc,new Point(container.lon, container.lat), container.isForeign());
 				stations.add(st);
 				if (startStop != null) {
 					// create a segment;
@@ -269,6 +256,53 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 				startStop = st;
 			}
 		}
+	}
+
+	@Override
+	protected RegionDetails getRegionDetails(String regionId) {
+		RegionDetails ret = new RegionDetails();
+		ret.setRegionId(regionId);
+		GetAttributesResult result = sdb.getAttributes(new GetAttributesRequest(REGIONS, regionId));
+		List<Attribute> regionAttributes = result.getAttributes();
+		double seLat = 0;
+		double seLon = 0;
+		double nwLat = 0;
+		double nwLon = 0;
+		for(Attribute attr:regionAttributes){
+			if(attr.getName().equalsIgnoreCase("length")){
+				ret.setLength(Integer.parseInt(attr.getValue()));
+			}else if(attr.getName().equalsIgnoreCase("southeastLat")){
+				seLat = Double.parseDouble(attr.getValue());
+			}else if(attr.getName().equalsIgnoreCase("northwestLat")){
+				nwLat = Double.parseDouble(attr.getValue());
+			}else if(attr.getName().equalsIgnoreCase("southeastLon")){
+				seLon = Double.parseDouble(attr.getValue());
+			}else if(attr.getName().equalsIgnoreCase("northwestLon")){
+				nwLon = Double.parseDouble(attr.getValue());
+			}
+		}
+		
+		ret.setNorthwest(new Point(nwLon, nwLat));
+		ret.setSoutheast(new Point(seLon, seLat));
+		return ret;
+	}
+
+	@Override
+	public void flushRoute(String sessionID) {
+		String lineName = getLineDetails(sessionID);
+		Multimap<String, List<PointContainer>> points = getPoints(sessionID);
+		//store the line in every submap
+		for(Entry<String, List<PointContainer>> entry:points.entries()){
+			List<LineSegment> segments = new ArrayList<LineSegment>();
+			ArrayList<Stop> stations = new ArrayList<Stop>();
+			ArrayList<Point> linePoints = new ArrayList<Point>();
+			createDataStructures(lineName,sessionID, entry.getKey(), entry.getValue(), segments, stations,linePoints);
+			
+			store(lineName, sessionID,entry.getKey(), segments, stations, linePoints);
+			
+		}
+		
+		clearSession(sessionID);
 	}
 
 }

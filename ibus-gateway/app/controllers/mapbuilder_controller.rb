@@ -24,8 +24,8 @@
 class MapbuilderController < ApplicationController
   
   def initiate
-    lat = params[:data][:lat]
-    long = params[:data][:long]
+    lat = params[:data][:lat].gsub("_",".")
+    long = params[:data][:long].gsub("_",".")
     line = params[:data][:lineid]
     desc = params[:data][:desc]
     ts = params[:data][:ts]
@@ -36,8 +36,8 @@ class MapbuilderController < ApplicationController
   end
 
   def addpoint
-    lat = params[:data][:lat]
-    long = params[:data][:long]
+    lat = params[:data][:lat].gsub("_",".")
+    long = params[:data][:long].gsub("_",".")
     ts = params[:data][:ts]
     id = params[:id]
     @@wrapper.addPoint(id,ts,lat,long)  
@@ -45,8 +45,8 @@ class MapbuilderController < ApplicationController
   end
 
   def addstation
-    lat = params[:data][:lat]
-    long = params[:data][:long]
+    lat = params[:data][:lat].gsub("_",".")
+    long = params[:data][:long].gsub("_",".")
     desc = params[:data][:desc]
     ts = params[:data][:ts]
     id = params[:id]
@@ -55,8 +55,8 @@ class MapbuilderController < ApplicationController
   end
 
   def complete
-    lat = params[:data][:lat]
-    long = params[:data][:long]
+    lat = params[:data][:lat].gsub("_",".")
+    long = params[:data][:long].gsub("_",".")
     desc = params[:data][:desc]
     ts = params[:data][:ts]
     id = params[:id]

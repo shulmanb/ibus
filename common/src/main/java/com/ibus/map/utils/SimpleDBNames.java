@@ -8,6 +8,7 @@ public class SimpleDBNames {
 	public static final String SEGMENT_POINTS = "ibus_segment_points";
 	public static final String STATIONS = "ibus_stations";
 	public static final String STATIONS_DETAILS = "ibus_stations_details";
+	public static final String REGIONS = "ibus_regions";
 	
 	
 	//attribute names

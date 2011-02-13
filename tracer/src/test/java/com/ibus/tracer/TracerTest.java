@@ -1,20 +1,28 @@
 package com.ibus.tracer;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import redis.clients.jedis.Jedis;
+
+import com.ibus.tracer.db.ISessionDB;
+import com.ibus.tracer.db.RedisSessionDB;
 @Ignore
 public class TracerTest {
 
-	@Before
-	public void setUp() throws Exception {
-	}
+	private Jedis jedis;
+	private Tracer tr = new Tracer();
 
-	@After
-	public void tearDown() throws Exception {
+	@Before
+	public void setUpBefore() throws Exception {
+		jedis = mock(Jedis.class);
+		ISessionDB sesDb = new  RedisSessionDB(jedis);
+		tr.setSesDb(sesDb);
 	}
 
 	@Test

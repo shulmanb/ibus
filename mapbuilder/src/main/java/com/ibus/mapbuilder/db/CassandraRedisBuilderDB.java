@@ -14,4 +14,10 @@ public class CassandraRedisBuilderDB extends AbstractRedisBuilderDB {
 
 	}
 
+	@Override
+	protected RegionDetails getRegionDetails(String submap) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
