@@ -61,6 +61,11 @@ IbusGateway::Application.routes.draw do
   match '/:ses/area/by_corners/:lat1/:long1/:lat2/:long2'=>"map#area_details_by_corners", :via => :get
   match '/:ses/area/by_corners/'=>"map#area_details_by_corners", :via => :get
   
+  match '/lines/:id/buses'=> "map#line_buses", :via => :get
+  match '/:ses/lines/:id/buses'=> "map#line_buses", :via => :get
+
+  
+  
   #navigation
   match '/route/:lat1/:long1/:lat2/:long2/:submap'=>"navigation#navigate", :via => :get
   match '/route/'=>"navigation#navigate", :via => :get

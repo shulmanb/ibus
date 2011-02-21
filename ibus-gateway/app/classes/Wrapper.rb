@@ -37,6 +37,7 @@ import com.ibus.mapbuilder.Mapbuilder
 import com.ibus.navigation.map.MapQuery
 import com.ibus.navigation.map.Navigator
 import com.ibus.tracer.Tracer
+import com.ibus.tracer.BusPositionTracer
 import com.ibus.tracer.SessionManager
 import com.ibus.tracer.module.TracerModule
 import com.ibus.navigation.module.NavigationModule
@@ -139,7 +140,7 @@ class Wrapper
     TracerModule.initialize "localhost",6379
     @tracer = TracerModule.getTracer 
     @sessionMgr = TracerModule.getSessionManager
-    
+    @bus_tracer = TracerModule.getBusPositionTracer
     MapbuilderModule.initialize "localhost",6379,"AKIAIJPN5YYDFNRZHUSQ","0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB"
     @builder = MapbuilderModule.getMapbuilder
     
@@ -274,4 +275,12 @@ class Wrapper
     @tracer.getCheckInStatus(session)
   end
      
+  def tracBus(lineid, lon, lat)
+    @bus_tracer.tracPosition(lineid,Point.new(lon.to_f,lat.to_f))
+  end
+  
+  def queryBusLocations(lineid)
+    @bus_tracer.getLineBuses(lineid)
+  end
+  
 end

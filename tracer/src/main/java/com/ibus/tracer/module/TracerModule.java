@@ -7,10 +7,13 @@ import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
 import com.ibus.connectivity.Retrieable;
 import com.ibus.connectivity.RetryRedisOperation;
+import com.ibus.tracer.BusPositionTracer;
 import com.ibus.tracer.SessionManager;
 import com.ibus.tracer.Tracer;
 import com.ibus.tracer.db.ISessionDB;
+import com.ibus.tracer.db.ITracingDB;
 import com.ibus.tracer.db.RedisSessionDB;
+import com.ibus.tracer.db.RedisTracingDB;
 
 public class TracerModule extends AbstractModule {
 
@@ -20,6 +23,7 @@ public class TracerModule extends AbstractModule {
 	private static TracerModule tm = null;
 	private static Tracer tr = null;
 	private static SessionManager sm = null;
+	private static BusPositionTracer bpt = null;
 	
 	public TracerModule(){
 	}
@@ -41,6 +45,7 @@ public class TracerModule extends AbstractModule {
 		bind(Integer.class).annotatedWith(Names.named("REDIS PORT")).toInstance(redisPort);
 		bindInterceptor(Matchers.any(), Matchers.annotatedWith(Retrieable.class), 
 		        new RetryRedisOperation());
+		bind(ITracingDB.class).to(RedisTracingDB.class).asEagerSingleton();
 	}
 
 	
@@ -52,6 +57,7 @@ public class TracerModule extends AbstractModule {
 			injector = Guice.createInjector(tm);
 			tr = injector.getInstance(Tracer.class);
 			sm = injector.getInstance(SessionManager.class);
+			bpt = injector.getInstance(BusPositionTracer.class);
 		}
 	}
 	
@@ -62,5 +68,9 @@ public class TracerModule extends AbstractModule {
 	
 	public static SessionManager getSessionManager(){
 		return sm;
+	}
+	
+	public static BusPositionTracer getBusPositionTracer(){
+		return bpt;
 	}
 }

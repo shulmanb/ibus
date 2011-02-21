@@ -259,7 +259,6 @@ public class Tracer implements ITracer {
 	 * @return <code>true</code> if reached the last stop on route
 	 */
 	private boolean moveToNextSegment(String sessionId, Status status) {
-		//TODO: add a possibility to a remote segment (that requires walking, (cluster of stations))
 		LineSegment ls = sesDb.popNextSegment(sessionId);
 		if(ls == null){
 			status.setStatus(StatusOnRoute.ON_THE_WAY_TO_DESTIANTION);

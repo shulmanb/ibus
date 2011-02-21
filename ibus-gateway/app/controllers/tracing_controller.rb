@@ -15,6 +15,9 @@ class TracingController < ApplicationController
     lon = params[:data][:lon]
     ts = params[:data][:ts]
     @status = @@wrapper.storeLocationOnRoute session, lat, lon, ts
+    if @status.currLineId != nil
+      @@wrapper.tracBus @status.currLineId, lon, lat
+    end
     format @status        
   end
 

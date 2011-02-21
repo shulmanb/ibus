@@ -50,7 +50,7 @@ public class AbstractRedisStorage implements IReconnectable{
 		return ret;
 	}
 
-	public void returnJedis(Jedis jedis) {
+	protected void returnJedis(Jedis jedis) {
 		if(myJedis == null){
 			jedisPool.returnResource(jedis);
 		}

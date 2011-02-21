@@ -20,7 +20,7 @@ public interface IMapQuery {
 	public Stop[] getLineStationsInArea(String lineId,Point center, int latoffset, int lonoffset);
 	public AreaDetails getAreaDetails(Point left, Point right);
 	public AreaDetails getAreaDetails(Point center, int latoffset, int lonoffset);
-	void deleteLine(String lineId);
-	Lines getLinesInSubmap(String submap);
+	public void deleteLine(String lineId);
+	public Lines getLinesInSubmap(String submap);
 	
 }

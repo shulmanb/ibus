@@ -168,4 +168,9 @@ class MapController < ApplicationController
     format_empty :ok  
   end
   
+  def line_buses
+    lineid = params[:id]
+    @points = @@wrapper.queryBusLocations lineid
+    format @points
+  end
 end
