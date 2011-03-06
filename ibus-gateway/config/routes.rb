@@ -7,12 +7,12 @@ IbusGateway::Application.routes.draw do
   match '/lines/:id/laststation' => "mapbuilder#complete" ,:via => :post
   
   #map query
-  match '/stations/by_center/:lat/:long/:latoffst/:longoffst' => "map#stations_by_center" ,:via => :get
-  match '/:ses/stations/by_center/:lat/:long/:latoffst/:longoffst' => "map#stations_by_center" ,:via => :get
+  match '/stations/by_center/:lat/:long/:latoffst/:longoffst/:submap' => "map#stations_by_center" ,:via => :get
+  match '/:ses/stations/by_center/:lat/:long/:latoffst/:longoffst/:submap' => "map#stations_by_center" ,:via => :get
   match '/stations/by_center' => "map#stations_by_center" ,:via => :get
 
-  match '/stations/by_corners/:lat1/:long1/:lat2/:long2' => "map#stations_by_corners" ,:via => :get
-  match '/:ses/stations/by_corners/:lat1/:long1/:lat2/:long2' => "map#stations_by_corners" ,:via => :get
+  match '/stations/by_corners/:lat1/:long1/:lat2/:long2/:submap' => "map#stations_by_corners" ,:via => :get
+  match '/:ses/stations/by_corners/:lat1/:long1/:lat2/:long2/:submap' => "map#stations_by_corners" ,:via => :get
   match '/stations/by_corners' => "map#stations_by_coner" ,:via => :get
   
   match '/lines/:id/stations'=> "map#line_stations", :via => :get

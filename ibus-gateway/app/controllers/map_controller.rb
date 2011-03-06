@@ -124,7 +124,8 @@ class MapController < ApplicationController
     lat2 = params[:lat2].gsub("_",".")
     long1 = params[:long1].gsub("_",".")
     lat1 = params[:lat1].gsub("_",".")
-    @stations = @@wrapper.getStopsInAreaByCorners('il_yoqneam',lat1,long1,lat2,long2)
+    submap = params[:submap]
+    @stations = @@wrapper.getStopsInAreaByCorners(submap,lat1,long1,lat2,long2)
     format @stations
   end
 
@@ -133,9 +134,8 @@ class MapController < ApplicationController
     latoffset = params[:latoffst]
     long = params[:long].gsub("_",".")
     lat = params[:lat].gsub("_",".")
-    print "OFFSETS #{latoffset} #{longoffset}"
-
-      @stations = @@wrapper.getStopsInAreaByCenter('il_yoqneam',lat,long,latoffset,longoffset)
+    submap = params[:submap]
+      @stations = @@wrapper.getStopsInAreaByCenter(submap,lat,long,latoffset,longoffset)
     format @stations
   end
   def area_details_by_center
