@@ -108,16 +108,15 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 
 		BatchPutAttributesRequest bpar = new BatchPutAttributesRequest();
 		bpar.setDomainName(STATIONS_DETAILS);
-		Collection<ReplaceableItem> items = new LinkedList<ReplaceableItem>();
+		ArrayList<ReplaceableItem> items = new ArrayList<ReplaceableItem>();
 
 		//retrieve existing stations and add line to them
 		addExistingStationsToBatch(lineId,lineName, items, stationsToAlter);
 
 		addNewStationsToBatch(submap, lineId,lineName, stationsToAdd, items);
-		//store in batch all
+		//store in batch all, divide for chunk with 25 in each (simple db limitation) 
 		if(!items.isEmpty()){
-			bpar.setItems(items);
-			sdb.batchPutAttributes(bpar);
+			executeItemsBatch(bpar, items);
 		}
 		//store list of stations for line
 		storeStationsList(stations, submap, lineId);
@@ -252,12 +251,31 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		}
 		if(!segmentsPoints.isEmpty()){
 			for(List<ReplaceableItem> pBatch:segmentsPoints){
-				batch.setItems(pBatch);
-				sdb.batchPutAttributes(batch);
+				executeItemsBatch(batch, pBatch);
 			}
 		}
 		putAttributesRequest.setAttributes(attributes);
 		sdb.putAttributes(putAttributesRequest);
+	}
+
+	/**
+	 * Executes simpledb batch chunking in 25 items for a batch
+	 * @param batch
+	 * @param pBatch
+	 */
+	private void executeItemsBatch(BatchPutAttributesRequest batch,
+			List<ReplaceableItem> pBatch) {
+		for(;;){
+			if(pBatch.size()<=25){
+				batch.setItems(pBatch);
+				sdb.batchPutAttributes(batch);
+				break;
+			}
+			List<ReplaceableItem> lst = pBatch.subList(0, 25);
+			batch.setItems(lst);
+			sdb.batchPutAttributes(batch);
+			lst.clear();
+		}
 	}
 
 	private void addPointsToBatch(String lineId, int indx,

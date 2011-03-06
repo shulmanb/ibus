@@ -142,7 +142,7 @@ public class MapBuilderTest {
 	}
 
 	@Test
-	public void testFinishRouteRecording_BaTches() {
+	public void testFinishRouteRecording_Points_Batches() {
 		//mock jedis.get session details
 		when(jedis.get("ses")).thenReturn("yoqneam:1");
 		//mock retrieve points
@@ -176,5 +176,38 @@ public class MapBuilderTest {
 
 	}
 
+	@Test
+	public void testFinishRouteRecording_Stations_Batches() {
+		//mock jedis.get session details
+		when(jedis.get("ses")).thenReturn("yoqneam:1");
+		//mock retrieve points
+		final List<String> lst = new LinkedList<String>(); 
+		for(int i = 0;i<=50;i++){
+			lst.add("{\"lat\":"+i+".0,\"lon\":"+i+".0,\"ts\":0,\"isStation\":true}");
+			lst.add("{\"lat\":"+i+".01,\"lon\":"+i+".01,\"ts\":1,\"isStation\":false}");
+		}
+		when(jedis.lrange("list:ses",1, -1)).thenReturn(lst);
+		
+		//mock call to simple db
+		when(sdb.getAttributes(any(GetAttributesRequest.class))).
+			thenReturn(new GetAttributesResult());
+		
+		mb.finishRouteRecording("ses", 2,new Point(50,50));
+
+		verify(jedis).rpush("list:ses", "{\"lat\":50.0,\"lon\":50.0,\"ts\":2,\"isStation\":true}");
+		verify(jedis).get("ses");
+		verify(jedis).lrange("list:ses",1, -1);
+		verify(jedis).del("ses","list:ses");
+
+		ArgumentCaptor<PutAttributesRequest> putAttributes = ArgumentCaptor.forClass(PutAttributesRequest.class);
+		ArgumentCaptor<BatchPutAttributesRequest> batchPutAttributes = ArgumentCaptor.forClass(BatchPutAttributesRequest.class);
+		
+		verify(sdb,times(1)).getAttributes(any(GetAttributesRequest.class));
+		verify(sdb,times(3)).putAttributes(putAttributes.capture());
+		verify(sdb, times(53)).batchPutAttributes(batchPutAttributes.capture());
+		verifyNoMoreInteractions(jedis, sdb);
+		
+
+	}
 
 }
