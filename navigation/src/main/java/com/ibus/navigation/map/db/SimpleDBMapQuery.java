@@ -61,7 +61,14 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 		List<Item> items = getAllItems(query);
 
 		ArrayList<Point> linePoints = new ArrayList<Point>();
+		//sort by item indx
+		ArrayList<Item> sorted = new ArrayList<Item>(linePoints.size());
 		for (Item itm : items) {
+			String name = itm.getName();
+			String idx = name.substring(name.indexOf("_")+1);
+			sorted.add(Integer.valueOf(idx), itm);
+		}		
+		for (Item itm : sorted) {
 			Point[] tmp = new Point[itm.getAttributes().size()];
 			for (Attribute attr : itm.getAttributes()) {
 				int indx = Integer.valueOf(attr.getName());
