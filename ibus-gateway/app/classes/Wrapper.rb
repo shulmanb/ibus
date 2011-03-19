@@ -183,6 +183,10 @@ class Wrapper
     @query.getLineDetails(lineId,level)
   end
 
+  def getLineDetails(lineId)
+    @query.getLineDetails(lineId,10)
+  end
+
   def getLineStations(lineId)
     @query.getLineStations(lineId)
   end
@@ -281,6 +285,23 @@ class Wrapper
   
   def queryBusLocations(lineid)
     @bus_tracer.getLineBuses(lineid)
+  end
+  
+  def lineOffset(lineid,time)
+    line = @query.getLineDetails(lineid,10);
+    total_offset = 0
+    offset = 0
+    for point in line
+      if (offset+point.time) > time.to_i*1000
+        return point
+      else
+        if (offset != 0) and (point.time == 0)
+          total_offset+=offset
+        elsif
+          offset = point.time
+        end
+      end
+    end
   end
   
 end

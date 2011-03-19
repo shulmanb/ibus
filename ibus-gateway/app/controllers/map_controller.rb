@@ -102,7 +102,7 @@ class MapController < ApplicationController
   def line_details
     level = params[:level]
     lineid = params[:id]
-    @points = @@wrapper.getLineDetails(lineid,level)
+    @points = @@wrapper.getLineDetails(lineid)
     format @points    
   end
   
@@ -172,5 +172,12 @@ class MapController < ApplicationController
     lineid = params[:id]
     @points = @@wrapper.queryBusLocations lineid
     format @points
+  end
+  
+  def offset
+    lineid = params[:lineid]
+    time = params[:time]
+    @point = @@wrapper.lineOffset lineid, time
+    format @point
   end
 end

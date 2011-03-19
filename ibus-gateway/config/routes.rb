@@ -84,4 +84,6 @@ IbusGateway::Application.routes.draw do
   match '/user/:session/checkin' =>"tracing#checkin_to_route", :via=>:post
   match '/user/:session/checkin' =>"tracing#get_checkin_status", :via=>:get
   
+  match '/offset/:lineid/:time' => "map#offset", :via => :get
+  
 end
