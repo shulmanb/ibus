@@ -42,7 +42,7 @@ public class LinesMap {
 
 	private static int WALKING_DISTANCE_IN_METERS = 300;
 
-	private static int CLOSE_STATIONS_DISTANCE_IN_METERS = 150;
+	private static int CLOSE_STATIONS_DISTANCE_IN_METERS = 200;
 
 	/**
 	 * The map id , for example city
@@ -242,7 +242,7 @@ public class LinesMap {
 	 * 
 	 * @param stop
 	 */
-	void addStopToMap(Stop stop) {
+	void addStopToMap(Stop stop, boolean includeWalking) {
 		// TODO: add check that the stop's nodes exist in the map
 		stops.add(stop);
 		Point p = stop.getStopsPoint();
@@ -256,13 +256,14 @@ public class LinesMap {
 		//connect nodes within a stop
 		connectNodesWithinStop(stop.getNodes());
 		//connect stops within a walking distance
-		for (int indx : closeStops) {
-			Stop st = stops.get(indx);
-			if (!st.connectedTo(stop)) {
-				connectStopsByWalkingEdge(st, stop);
+		if(includeWalking){
+			for (int indx : closeStops) {
+				Stop st = stops.get(indx);
+				if (!st.connectedTo(stop)) {
+					connectStopsByWalkingEdge(st, stop);
+				}
 			}
 		}
-	
 	}
 
 	private void connectNodesWithinStop(Collection<Node> nodes) {
@@ -408,7 +409,7 @@ public class LinesMap {
 		}
 		map.join(other.map, mutual);
 		for(Stop st:stopsToAdd){
-			addStopToMap(st);
+			addStopToMap(st, true);
 		}
 		segments.putAll(other.segments);
 	}

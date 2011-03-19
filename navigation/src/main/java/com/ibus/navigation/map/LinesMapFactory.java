@@ -20,7 +20,7 @@ public class LinesMapFactory {
 		this.mapLoader = mapLoader;
 	}
 	
-	public LinesMap loadMap(String id){
+	public LinesMap loadMap(String id, boolean includeWalking){
 		
 		//retrieve all nodes edges
 		NodesGraph graph = mapLoader.getRoutesMap(id);
@@ -32,7 +32,7 @@ public class LinesMapFactory {
 		//retrieve all stops
 		Stop[] stops = mapLoader.getStops(id);
 		for(Stop stop:stops){
-			map.addStopToMap(stop);
+			map.addStopToMap(stop, includeWalking);
 		}
 		
 		//retrieve all lane segments

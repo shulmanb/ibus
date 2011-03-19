@@ -44,11 +44,11 @@ public class SimpleDbQuery {
 		
 	}
 	
-	@Test @Ignore
+	@Test 
 	public void testDeleteLine(){
-		mapQuery.deleteLineById("a415a92b-7c20-4e5a-a796-c574873141ef");
+		mapQuery.deleteLineById("7d36256f-23fc-4c96-ae25-1e22a5ab842f");
 	}
-	@Test
+	@Test @Ignore
 	public void testGetLinesInSubmap(){
 		mapQuery.getLinesInSubmap("il");
 	}

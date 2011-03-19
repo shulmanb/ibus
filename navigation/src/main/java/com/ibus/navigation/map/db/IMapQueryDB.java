@@ -4,6 +4,7 @@ import com.ibus.map.Line;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopDetails;
+import com.ibus.map.TimedPoint;
 
 public interface IMapQueryDB {
 
@@ -17,7 +18,7 @@ public interface IMapQueryDB {
 	 * @param laneId a unique id on the submap
 	 * @return arrays of points representing the lane
 	 */
-	Point[] getLinePoints(String lineId);
+	TimedPoint[] getLinePoints(String lineId);
 
 	/**
 	 * @param stationId a unique id in the system

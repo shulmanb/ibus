@@ -28,6 +28,7 @@ import com.ibus.map.Line;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopDetails;
+import com.ibus.map.TimedPoint;
 
 import static com.ibus.map.utils.SimpleDBNames.*
 ;
@@ -55,12 +56,12 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 	}
 
 	@Override
-	public Point[] getLinePoints(String lineId) {
+	public TimedPoint[] getLinePoints(String lineId) {
 		String query = 	"select * from "+SEGMENT_POINTS+" where itemName() like '"
 			+ lineId + "%' order by itemName() Asc";
 		List<Item> items = getAllItems(query);
 
-		ArrayList<Point> linePoints = new ArrayList<Point>();
+		ArrayList<TimedPoint> linePoints = new ArrayList<TimedPoint>();
 		//sort by item indx
 		Item[] sorted = new Item[items.size()];
 		for (Item itm : items) {
@@ -69,15 +70,15 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 			sorted[Integer.valueOf(idx)] = itm;
 		}		
 		for (Item itm : sorted) {
-			Point[] tmp = new Point[itm.getAttributes().size()];
+			TimedPoint[] tmp = new TimedPoint[itm.getAttributes().size()];
 			for (Attribute attr : itm.getAttributes()) {
 				int indx = Integer.valueOf(attr.getName());
 				tmp[indx] = gson.fromJson(attr.getValue(),
-						Point.class);
+						TimedPoint.class);
 			}
 			linePoints.addAll(Arrays.asList(tmp));
 		}
-		return linePoints.toArray(new Point[0]);
+		return linePoints.toArray(new TimedPoint[0]);
 	}
 
 	private List<Item> getAllItems(String query) {

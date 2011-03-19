@@ -21,7 +21,7 @@ public class SimpleDBMapFactoryTester {
 	@SuppressWarnings("unused")
 	@Test
 	public void testLoadMap() {
-		LinesMap map = factory.loadMap("il_yoqneam");
+		LinesMap map = factory.loadMap("il_yoqneam", true);
 		StopsRoute sr = map.findRoute(new Point(35.1042,32.6641), new Point(35.0891,32.6477));
 	}
 

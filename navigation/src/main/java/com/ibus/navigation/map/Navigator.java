@@ -21,7 +21,7 @@ public class Navigator implements INavigator {
 
 	@Override
 	public StopsRoute navigate(Point origin, Point destination, String submap) {
-		StopsRoute route = factory.loadMap(submap).findRoute(origin, destination);
+		StopsRoute route = factory.loadMap(submap, true).findRoute(origin, destination);
 		return route;
 	}
 	

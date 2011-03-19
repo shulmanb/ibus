@@ -115,7 +115,7 @@ public class LinesMapTest extends TestCase{
 	public void testComplexRoute(){
 		LinesMapFactory f = new LinesMapFactory();
 		f.setMapLoader(new LinesMapTest.DumyComplexMapDBLoader()); 
-		LinesMap map = f.loadMap("ttt");
+		LinesMap map = f.loadMap("ttt", true);
 		//start yigal alon  32.773077, 35.01240
 		//end 32.784052, 35.014849
 		
@@ -129,7 +129,7 @@ public class LinesMapTest extends TestCase{
 	public void testClosestStop(){
 		LinesMapFactory f = new LinesMapFactory();
 		f.setMapLoader(new LinesMapTest.DumyComplexMapDBLoader()); 
-		LinesMap map = f.loadMap("ttt");
+		LinesMap map = f.loadMap("ttt", true);
 		Stop[] stops = map.findStopsNearby(new Point((float)32.773077,(float)35.01240),1);
 		assertEquals("A", stops[0].getDesc());
 		stops = map.findStopsNearby(new Point((float)32.773077,(float)35.01240),2);
@@ -140,7 +140,7 @@ public class LinesMapTest extends TestCase{
 	public void testStopsInArea(){
 		LinesMapFactory f = new LinesMapFactory();
 		f.setMapLoader(new LinesMapTest.DumyComplexMapDBLoader()); 
-		LinesMap map = f.loadMap("ttt");
+		LinesMap map = f.loadMap("ttt", true);
 		Stop[] stops = map.getStopsInArear(new Point((float)32.773077,(float)35.01240),500,500);
 		assertTrue(stops.length== 10);
 		stops = map.getStopsInArear(new Point((float)32.773077,(float)35.01240),1500,1500);
@@ -176,10 +176,10 @@ public class LinesMapTest extends TestCase{
 
 		m.addVertex(nodeA, nodeD, 1);
 		m.addVertex(nodeG, nodeH, 3);
-		lm.addStopToMap(stopA);
-		lm.addStopToMap(stopD);
-		lm.addStopToMap(stopG);
-		lm.addStopToMap(stopH);
+		lm.addStopToMap(stopA, true);
+		lm.addStopToMap(stopD, true);
+		lm.addStopToMap(stopG, true);
+		lm.addStopToMap(stopH, true);
 		assertTrue(m.getWeight(nodeA, nodeG)>0);
 	}
 	
@@ -212,11 +212,11 @@ public class LinesMapTest extends TestCase{
 
 		m.addVertex(nodeA, nodeD, 1);
 		m1.addVertex(nodeG, nodeH, 3);
-		lm.addStopToMap(stopA);
-		lm.addStopToMap(stopD);
+		lm.addStopToMap(stopA, true);
+		lm.addStopToMap(stopD, true);
 		lm.addLineSegmentToMap(new LineSegment("1", stopA, stopD));
-		lm1.addStopToMap(stopG);
-		lm1.addStopToMap(stopH);
+		lm1.addStopToMap(stopG, true);
+		lm1.addStopToMap(stopH, true);
 		lm1.addLineSegmentToMap(new LineSegment("2", stopG, stopH));
 		lm.joinMaps(lm1);
 		assertEquals(2,nodeG.getId());
@@ -260,16 +260,16 @@ public class LinesMapTest extends TestCase{
 		
 		m1.addVertex(nodeF1, nodeG, 3);
 		m1.addVertex(nodeG, nodeH, 3);
-		lm.addStopToMap(stopA);
-		lm.addStopToMap(stopD);
+		lm.addStopToMap(stopA, true);
+		lm.addStopToMap(stopD, true);
 		assertTrue(m.getWeight(nodeF, nodeD)>0);
 		assertTrue(m.getWeight(nodeD, nodeF)>0);
 		lm.addLineSegmentToMap(new LineSegment("1", stopA, stopD));
-		lm1.addStopToMap(stopD1);
+		lm1.addStopToMap(stopD1, true);
 		assertTrue(m1.getWeight(nodeF1, nodeD1)>0);
 		assertTrue(m1.getWeight(nodeD1, nodeF1)>0);
-		lm1.addStopToMap(stopG);
-		lm1.addStopToMap(stopH);
+		lm1.addStopToMap(stopG, true);
+		lm1.addStopToMap(stopH, true);
 		lm1.addLineSegmentToMap(new LineSegment("2", stopD1, stopG));
 		lm1.addLineSegmentToMap(new LineSegment("2", stopG, stopH));
 		lm.joinMaps(lm1);
@@ -308,9 +308,9 @@ public class LinesMapTest extends TestCase{
 
 		m.addVertex(nodeA, nodeB, 1*60*1000);
 		m.addVertex(nodeB1, nodeD, 1*60*1000);
-		lm.addStopToMap(stopA);
-		lm.addStopToMap(stopB);
-		lm.addStopToMap(stopD);
+		lm.addStopToMap(stopA, true);
+		lm.addStopToMap(stopB, true);
+		lm.addStopToMap(stopD, true);
 		assertEquals(15*60*1000,m.getWeight(nodeB, nodeB1));
 		StopsRoute sr = lm.findRoute(a, d);
 		assertEquals(2,sr.getRoute().size());
@@ -347,10 +347,10 @@ public class LinesMapTest extends TestCase{
 
 		m.addVertex(nodeA, nodeB, 1*60*1000);
 		m.addVertex(nodeC, nodeD, 1*60*1000);
-		lm.addStopToMap(stopA);
-		lm.addStopToMap(stopB);
-		lm.addStopToMap(stopC);
-		lm.addStopToMap(stopD);
+		lm.addStopToMap(stopA, true);
+		lm.addStopToMap(stopB, true);
+		lm.addStopToMap(stopC, true);
+		lm.addStopToMap(stopD, true);
 		StopsRoute sr = lm.findRoute(a, d);
 		assertEquals(3,sr.getRoute().size());
 		assertTrue(60*1000+60*1000+15*60*1000 < sr.getWeight());

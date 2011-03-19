@@ -17,6 +17,7 @@ import com.ibus.map.Lines;
 import com.ibus.map.Point;
 import com.ibus.map.Stop;
 import com.ibus.map.StopDetails;
+import com.ibus.map.TimedPoint;
 import com.ibus.map.utils.MapUtils;
 import com.ibus.navigation.map.db.IMapQueryDB;
 import com.ibus.navigation.map.db.SimpleDBMapQuery;
@@ -51,7 +52,7 @@ public class MapQuery implements IMapQuery {
 	}
 
 	@Override
-	public Point[] getLineDetails(String lineId, int level) {
+	public TimedPoint[] getLineDetails(String lineId, int level) {
 		return db.getLinePoints(lineId);
 	}
 
