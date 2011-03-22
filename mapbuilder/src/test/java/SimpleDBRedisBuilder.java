@@ -7,19 +7,19 @@ import com.google.gson.Gson;
 import com.ibus.map.Point;
 import com.ibus.mapbuilder.db.SimpleDBRedisBuilderDB;
 public class SimpleDBRedisBuilder {
-	@Test@Ignore
+	@Test//@Ignore
 	public void test() {
 		// Jedis jedis = new Jedis("localhost", 6379);
 		// jedis.set("key", "value");
 		// System.out.println(jedis.get("key"));
 
 		SimpleDBRedisBuilderDB srb = new SimpleDBRedisBuilderDB("localhost",
-				6379, "AKIAIJPN5YYDFNRZHUSQ", "0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB");
+				6379, "AKIAIJPN5YYDFNRZHUSQ", "0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB","sdb.eu-west-1.amazonaws.com");
 		Gson gson = new Gson();
 		String	session = UUID.randomUUID().toString(); 
-		srb.createRecordingSession(session, "2","il_yoqneam");
+		srb.createRecordingSession(session, "test","il_yoqneam");
 		try {
-			for (String str : Line2.LINE2_DATA) {
+			for (String str : LongLine.LONGLINE_DATA) {
 				if (str.contains("point")) {
 					PointContainer p = gson.fromJson(str, PointContainer.class);
 					srb.addPoint(session, new Point(Double.valueOf(p.point.longit),Double.valueOf(p.point.lat)), Long.valueOf(p.point.ts));

@@ -50,10 +50,14 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 			@Named("REDIS HOST")String redisHost, 
 			@Named("REDIS PORT")int redisPort,
 			@Named("AWS USER KEY")String userKey, 
-			@Named("AWS SECRET KEY")String secretKey) {
+			@Named("AWS SECRET KEY")String secretKey,
+			@Named("ENDPOINT")String endpoint) {
 		super(redisHost, redisPort);
 		sdb = new AmazonSimpleDBClient(new BasicAWSCredentials(userKey,
 				secretKey));
+		if(endpoint != null && !endpoint.isEmpty()){
+			sdb.setEndpoint(endpoint);
+		}
 	}
 
 	@Override
@@ -231,16 +235,18 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 			List<ReplaceableAttribute> points = new LinkedList<ReplaceableAttribute>();
 			ArrayList<TimedPoint> route = segment.getPoints();
 			int i = 0;
+			int subindx = 0;
 			for(TimedPoint p:route){
 				points.add(new ReplaceableAttribute(String.valueOf(i), gson.toJson(p,TimedPoint.class), true));
 				i++;
 				if(points.size() == 255){
 					//SimpleDB allows maximum 256 attributes in a batch, divide points for batches of 255
-					addPointsToBatch(lineId, indx, segmentsPoints, points);
+					addPointsToBatch(lineId, indx, subindx, segmentsPoints, points);
+					subindx++;
 				}
 			}
 			if(points.size() > 0){
-				addPointsToBatch(lineId, indx, segmentsPoints, points);
+				addPointsToBatch(lineId, indx, subindx, segmentsPoints, points);
 			}
 			//not serializing the points
 			segment.setPoints(null);
@@ -278,11 +284,15 @@ public class SimpleDBRedisBuilderDB extends AbstractRedisBuilderDB {
 		}
 	}
 
-	private void addPointsToBatch(String lineId, int indx,
+	private void addPointsToBatch(String lineId, int indx,int subindex,
 			List<List<ReplaceableItem>> segmentsPoints,
 			List<ReplaceableAttribute> points) {
+		String id = lineId+"_"+indx;
+		if(subindex > 0){
+			id=id+"_"+subindex;
+		}
 		List<ReplaceableItem> batchOfPOints = new LinkedList<ReplaceableItem>();
-		batchOfPOints.add(new ReplaceableItem(lineId+"_"+indx, new LinkedList<ReplaceableAttribute>(points)));
+		batchOfPOints.add(new ReplaceableItem(id, new LinkedList<ReplaceableAttribute>(points)));
 		segmentsPoints.add(batchOfPOints);
 		points.clear();
 	}

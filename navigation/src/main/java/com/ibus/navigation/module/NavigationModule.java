@@ -43,6 +43,7 @@ public class NavigationModule extends AbstractModule {
 		bind(LinesMapFactory.class);
 		bind(String.class).annotatedWith(Names.named("AWS USER KEY")).toInstance(awsKey);
 		bind(String.class).annotatedWith(Names.named("AWS SECRET KEY")).toInstance(awsSecret);
+		bind(String.class).annotatedWith(Names.named("ENDPOINT")).toInstance(null);
 	}
 
 	

@@ -9,7 +9,7 @@ import com.ibus.map.StopDetails;
 
 //@Ignore
 public class SimpleDbQuery {
-	SimpleDBMapQuery mapQuery = new SimpleDBMapQuery("AKIAIJPN5YYDFNRZHUSQ", "0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB");
+	SimpleDBMapQuery mapQuery = new SimpleDBMapQuery("AKIAIJPN5YYDFNRZHUSQ", "0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB","sdb.eu-west-1.amazonaws.com");
 	
 	@Test @Ignore
 	public void testGetStationsForLane(){
@@ -17,9 +17,9 @@ public class SimpleDbQuery {
 		assertEquals(8, stops.length);
 	}
 
-	@Test @Ignore
+	@Test
 	public void testGetLanePoints(){
-		Point[] points = mapQuery.getLinePoints("e5310bc6-e58e-4bf7-830c-fa0fbf679133");
+		Point[] points = mapQuery.getLinePoints("384ffc4e-9060-469d-84fe-6b437b883cda");
 		assertEquals(366, points.length);
 	}
 	
@@ -44,7 +44,7 @@ public class SimpleDbQuery {
 		
 	}
 	
-	@Test 
+	@Test @Ignore
 	public void testDeleteLine(){
 		mapQuery.deleteLineById("7d36256f-23fc-4c96-ae25-1e22a5ab842f");
 	}

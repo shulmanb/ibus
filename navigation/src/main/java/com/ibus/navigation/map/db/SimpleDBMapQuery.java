@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
@@ -37,9 +40,12 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 	private Gson gson = new Gson();
 	
 	@Inject
-	public SimpleDBMapQuery(@Named("AWS USER KEY")String userKey, @Named("AWS SECRET KEY")String secretKey) {
+	public SimpleDBMapQuery(@Named("AWS USER KEY")String userKey, @Named("AWS SECRET KEY")String secretKey, @Named("ENDPOINT")String endpoint) {
 		sdb = new AmazonSimpleDBClient(new BasicAWSCredentials(userKey,
 				secretKey));
+		if(endpoint != null && !endpoint.isEmpty()){
+			sdb.setEndpoint(endpoint);
+		}
 	}
 
 	@Override
@@ -63,22 +69,41 @@ public class SimpleDBMapQuery implements IMapQueryDB {
 
 		ArrayList<TimedPoint> linePoints = new ArrayList<TimedPoint>();
 		//sort by item indx
-		Item[] sorted = new Item[items.size()];
+		SortedMap<Double, Item> map = new TreeMap<Double, Item>();
 		for (Item itm : items) {
 			String name = itm.getName();
 			String idx = name.substring(name.indexOf("_")+1);
-			sorted[Integer.valueOf(idx)] = itm;
+			map.put(Double.valueOf(idx.replace("_", ".")), itm);
 		}		
-		for (Item itm : sorted) {
+		
+		
+		for (Entry<Double, Item> entry : map.entrySet()) {
+			Item itm = entry.getValue();
+			Double name = entry.getKey();
+			name = name - name.intValue();
+			name *= (name.toString().length() - 2)*10;
+			int base = name.intValue()*255;
 			TimedPoint[] tmp = new TimedPoint[itm.getAttributes().size()];
 			for (Attribute attr : itm.getAttributes()) {
 				int indx = Integer.valueOf(attr.getName());
-				tmp[indx] = gson.fromJson(attr.getValue(),
+				tmp[indx-base] = gson.fromJson(attr.getValue(),
 						TimedPoint.class);
 			}
 			linePoints.addAll(Arrays.asList(tmp));
 		}
 		return linePoints.toArray(new TimedPoint[0]);
+	}
+
+	/**
+	 * @param sorted
+	 * @param indx
+	 * @param b
+	 */
+	private void addToArray(Item[] array, int indx, boolean shiftExisting) {
+		if(array[indx]!=null){
+			
+		}
+		
 	}
 
 	private List<Item> getAllItems(String query) {

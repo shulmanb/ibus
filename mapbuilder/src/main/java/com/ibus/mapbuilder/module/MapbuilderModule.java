@@ -17,6 +17,7 @@ public class MapbuilderModule extends AbstractModule {
 	private String awsSecret;
 	private String redisHost;
 	private Integer redisPort;
+	private String ep = null;
 	private static Injector injector;
 	private static MapbuilderModule mb = null;
 	private static Mapbuilder builder;
@@ -49,6 +50,7 @@ public class MapbuilderModule extends AbstractModule {
  
 		bind(String.class).annotatedWith(Names.named("AWS USER KEY")).toInstance(awsKey);
 		bind(String.class).annotatedWith(Names.named("AWS SECRET KEY")).toInstance(awsSecret);
+		bind(String.class).annotatedWith(Names.named("ENDPOINT")).toInstance(ep);
 
 		bindInterceptor(Matchers.any(), Matchers.annotatedWith(Retrieable.class), 
 		        new RetryRedisOperation());

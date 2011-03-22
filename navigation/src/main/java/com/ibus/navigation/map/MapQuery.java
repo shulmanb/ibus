@@ -25,8 +25,8 @@ import com.ibus.navigation.map.db.SimpleDBMapQuery;
 public class MapQuery implements IMapQuery {
 
 	private IMapQueryDB db;
-	public MapQuery(String awskey, String awssecret){
-		this.db = new SimpleDBMapQuery(awskey, awssecret);
+	public MapQuery(String awskey, String awssecret, String endpoint){
+		this.db = new SimpleDBMapQuery(awskey, awssecret,endpoint);
 	}
 	
 	@Inject

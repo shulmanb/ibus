@@ -24,8 +24,8 @@ public class Mapbuilder implements IMapBuilder{
 	 * @param awsKey
 	 * @param awsSecret
 	 */
-	public Mapbuilder(String redisHost,int redisPort, String awsKey, String awsSecret){
-		db = new SimpleDBRedisBuilderDB(redisHost, redisPort, awsKey, awsSecret);
+	public Mapbuilder(String redisHost,int redisPort, String awsKey, String awsSecret, String ep){
+		db = new SimpleDBRedisBuilderDB(redisHost, redisPort, awsKey, awsSecret,ep);
 	}
 	
 	@Override
