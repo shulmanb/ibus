@@ -141,17 +141,14 @@ class Wrapper
     @tracer = TracerModule.getTracer 
     @sessionMgr = TracerModule.getSessionManager
     @bus_tracer = TracerModule.getBusPositionTracer
-    MapbuilderModule.initialize "localhost",6379,"AKIAIJPN5YYDFNRZHUSQ","0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB"
+    MapbuilderModule.initialize "localhost",6379,"",""
     @builder = MapbuilderModule.getMapbuilder
     
-    NavigationModule.initialize "AKIAIJPN5YYDFNRZHUSQ","0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB"
+    NavigationModule.initialize "",""
     @query = NavigationModule.getMapQuery
     @navigator = NavigationModule.getNavigator  
   end
  
-#  @@builder = Mapbuilder.new("localhost",6379,"AKIAIJPN5YYDFNRZHUSQ","0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB")
-#  @@query = MapQuery.new("AKIAIJPN5YYDFNRZHUSQ","0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB")
-#  @@navigator = Navigator.new("AKIAIJPN5YYDFNRZHUSQ","0F6RjfqqS6sUjl1E886suHDWrrVPL5WMGeWipYtB")
 
   
      
